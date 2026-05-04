@@ -2,11 +2,13 @@
 <Package>
     <DisplayName>Logiciel Micro brico</DisplayName>
     <Description>Installation du logiciel Micro Brico</Description>
-    <Version>1.0.4</Version>
-    <ReleaseDate>2025-03-19</ReleaseDate>
+    <Version>1.0.5</Version>
+    <ReleaseDate>2025-03-29</ReleaseDate>
     <Default>true</Default>
     <Script>installscript.qs</Script>
 </Package>
+
+
 
 
 
