@@ -13,6 +13,7 @@
 #include <QCloseEvent>
 #include <QMessageBox>
 #include <QRegularExpression>
+#include <QAction>
 
 
 #define DAY_OF_RESA 5
@@ -31,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    this->GESKIT_show_broken_kits = true;
 
     QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL", "dbtest");
 
@@ -201,6 +203,21 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event)
     //Context menu for GESKIT table widget only
     if (this->focusWidget() == this->ui->GESKIT_tableWidget_kit)
     {
+        QAction show_broken_kits_action("Afficher les kits en panne", this);
+        show_broken_kits_action.setCheckable(true);
+        show_broken_kits_action.setChecked(this->GESKIT_show_broken_kits);
+        connect(&show_broken_kits_action, &QAction::triggered, this, [this](bool checked) {
+            this->GESKIT_show_broken_kits = checked;
+            this->on_GESKIT_pushButton_getkit_clicked();
+        });
+
+        const bool is_kit_selected = this->GESKIT_get_kit_selected() != nullptr;
+        this->ui->actionafficher_les_logs_kit->setEnabled(is_kit_selected && this->login_user.getPrivilege() == E_admin);
+        this->ui->actiondupliquer_kit->setEnabled(is_kit_selected && this->login_user.getPrivilege() == E_admin);
+        this->ui->actionmodifier_kit->setEnabled(is_kit_selected && this->login_user.getPrivilege() == E_admin);
+
+        menu.addAction(&show_broken_kits_action);
+        menu.addSeparator();
         menu.addAction(this->ui->actionafficher_les_logs_kit);
         menu.addSeparator();
         menu.addAction(this->ui->actiondupliquer_kit);
@@ -208,10 +225,6 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event)
         menu.addAction(this->ui->actionmodifier_kit);
         menu.addSeparator();
         menu.addAction(this->ui->actionajouter_nouveau_kit);
-        if (this->GESKIT_get_kit_selected() == nullptr)// Only activate menu if a kit has been selected
-        {
-            menu.setEnabled(false);
-        }
         menu.exec(event->globalPos());
     }
     //Context menu for GESUSER table widget only
@@ -780,6 +793,19 @@ void MainWindow::on_GESKIT_pushButton_getkit_clicked()
         }
     }
 
+    if (this->GESKIT_show_broken_kits == false)
+    {
+        std::vector<Kit*> filtered_kits;
+        for(const auto& kit_elem : this->kitListGeskit_view)
+        {
+            if (kit_elem->getEn_panne() == false)
+            {
+                filtered_kits.push_back(kit_elem);
+            }
+        }
+        this->kitListGeskit_view = filtered_kits;
+    }
+
     // If user gives an input that leads to 0 matches, then disable duplicate button
     if(this->kitListGeskit_view.size() == 0)
     {
@@ -792,6 +818,11 @@ void MainWindow::GESKIT_refresh_kit_table(void)
 {
     vector<Kit*>::iterator it;
     int row = 0;
+
+    this->ui->GESKIT_tableWidget_kit->blockSignals(true);
+    this->ui->GESKIT_tableWidget_kit->clearContents();
+    this->ui->GESKIT_tableWidget_kit->setRowCount(0);
+    this->ui->GESKIT_tableWidget_kit->blockSignals(false);
 
     for(const auto& kit_elem : this->kitListGeskit_view)
     {
@@ -881,7 +912,7 @@ void MainWindow::GESKIT_push_back_new_kit_on_table(Kit* kit, int row)
 
 void MainWindow::on_GESKIT_tableWidget_kit_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn)
 {
-    if (currentRow != previousRow)
+    if (currentRow >= 0 && currentRow < (int)this->kitListGeskit_view.size() && currentRow != previousRow)
     {
         Kit* k = this->kitListGeskit_view[currentRow];
         // Get every items associated with kit from server

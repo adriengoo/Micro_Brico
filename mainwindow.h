@@ -125,6 +125,7 @@ private:
     PoppupAddKit *p_popupAddKit;
     log_user_kit_appli *p_log_user_kit_appli;
     bool isBasketReadyToBook; //Variable remembering if the basket contains an already booked kit
+    bool GESKIT_show_broken_kits;
     QListWidgetItem * item_lastSelectedResa;//Variable remembering the last selected resa (only for "SORTIE" view)
     QLabel * p_status_bar_label;
 
