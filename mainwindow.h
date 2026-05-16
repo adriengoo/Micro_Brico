@@ -101,6 +101,8 @@ private slots:
     void on_SORTIE_pushButton_retirer_kit_from_resa_clicked();
     void on_SORTIE_pushButton_endResa_clicked();
     void on_SORTIE_lineEdit_utinfo_returnPressed();
+    void on_SORTIE_checkBox_resa_mdpadmin_clicked(bool checked);
+    void on_SORTIE_pushButton_validate_mdp_sortie_clicked();
 
 private:
     Ui::MainWindow *ui;
@@ -127,6 +129,9 @@ private:
     bool isBasketReadyToBook; //Variable remembering if the basket contains an already booked kit
     bool GESKIT_show_broken_kits;
     QListWidgetItem * item_lastSelectedResa;//Variable remembering the last selected resa (only for "SORTIE" view)
+    bool sortie_resaPasswordValidated;
+    bool sortie_resaForcedByAdmin;
+    int sortie_lastSelectedResaNb;
     QLabel * p_status_bar_label;
 
     void GEN_raise_popup_info(QString msg);
@@ -198,6 +203,7 @@ private:
     void SORTIE_refresh_kitsOut_table();
     void SORTIE_restit_kit(bool * i_forced_by_admin, QString *i_optional_text);
     void SORTIE_calculate_remaining_quantity(std::vector<Item *> i_items_returned, std::vector<Item *> i_items_kit );
+    void SORTIE_refresh_resa_password_validation_state();
 
 };
 #endif // MAINWINDOW_H

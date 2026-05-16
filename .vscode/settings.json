@@ -1,0 +1,11 @@
+{
+  "cmake.cmakePath": "C:/Qt/Tools/CMake_64/bin/cmake.exe",
+    "cmake.useCMakePresets": "always",
+  "cmake.configurePreset": "qt-6.7.3-mingw-debug",
+  "cmake.buildPreset": "qt-6.7.3-mingw-debug",
+  "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+  "C_Cpp.default.compileCommands": "${workspaceFolder}/build/Desktop_Qt_6_7_3_MinGW_64_bit-Debug/compile_commands.json",
+  "C_Cpp.default.compilerPath": "C:/Qt/Tools/mingw1120_64/bin/g++.exe",
+  "C_Cpp.default.cppStandard": "c++17",
+  "C_Cpp.default.intelliSenseMode": "windows-gcc-x64"
+}

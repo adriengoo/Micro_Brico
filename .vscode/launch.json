@@ -1,0 +1,46 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(gdb) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Desktop_Qt_6_7_3_MinGW_64_bit-Debug/micro_brico_app.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "C:/Qt/Tools/mingw1120_64/bin/gdb.exe",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "visualizerFile": "c:\\Users\\adrie\\AppData\\Roaming\\Code\\User\\workspaceStorage\\870dbff207439f971ace750b8ad7d726\\tonka3000.qtvsctools\\qt.natvis.xml"
+        },
+        {
+            "name": "(Windows) Launch",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Desktop_Qt_6_7_3_MinGW_64_bit-Debug/micro_brico_app.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "console": "internalConsole",
+            "visualizerFile": "c:\\Users\\adrie\\AppData\\Roaming\\Code\\User\\workspaceStorage\\870dbff207439f971ace750b8ad7d726\\tonka3000.qtvsctools\\qt.natvis.xml"
+        }
+    ]
+}

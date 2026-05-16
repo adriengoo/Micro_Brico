@@ -33,6 +33,10 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     this->GESKIT_show_broken_kits = true;
+    this->sortie_resaPasswordValidated = false;
+    this->sortie_resaForcedByAdmin = false;
+    this->sortie_lastSelectedResaNb = -1;
+    SORTIE_refresh_resa_password_validation_state();
 
     QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL", "dbtest");
 
@@ -127,12 +131,12 @@ MainWindow::MainWindow(QWidget *parent)
     this->ui->actionEffacer_les_reservations_pass_es->setEnabled(false);
 
     this->p_loginConnect = new (Login_connect);
-    #ifndef NDEBUG //DEBUG compilation
+#ifndef NDEBUG //DEBUG compilation
     // Connection automatique avec l'utilisateur "admin" à chaque démarrage
     this->login_user.setUtinfo("admin");
     this->login_user.setMdp("admin");
     this-> on_popupLogin_ok();
-    #endif
+#endif
 
 
 }
@@ -142,11 +146,11 @@ MainWindow::~MainWindow()
     delete ui;
     logBrowser->close();
     delete logBrowser;
- }
+}
 
 void MainWindow::closeEvent (QCloseEvent *event)
 {
-        delete this;
+    delete this;
 }
 
 void MainWindow::on_actionAfficher_les_logs_appli_triggered()
@@ -1665,7 +1669,7 @@ void MainWindow::on_RESA_pushButton_resa_showResa_clicked()
     Utilisateur l_user;
     bool has_errors = false;
 
-     g_utils.clearList(&this->resaList);
+    g_utils.clearList(&this->resaList);
     //Retrieve user id
     has_errors = g_connect_db.get_user_by_utinfo(this->ui->RESA_lineEdit_resa_utinfo_user->text(), &l_user);
     if (has_errors != true)
@@ -1822,10 +1826,14 @@ void MainWindow::on_SORTIE_lineEdit_utinfo_returnPressed()
 void MainWindow::on_SORTIE_pushButton_resa_showResa_clicked()
 {
     bool has_errors = false;
+    this->sortie_resaPasswordValidated = false;
+    this->sortie_resaForcedByAdmin = false;
+    this->sortie_lastSelectedResaNb = -1;
 
     //Delete every kits in "KitsOfResa" view
     this->kitListSortie_kitsOfResaView.clear(); //do not delete pointed kits though
     this->ui->SORTIE_listWidget_resa_kitsOfResa->clear();
+    SORTIE_refresh_resa_password_validation_state();
 
     //Delete every resa in "currentResa" view
     g_utils.clearList(&this->resaListSortie_byUser);
@@ -1880,6 +1888,13 @@ void MainWindow::on_SORTIE_listWidget_resa_currentResa_itemClicked(QListWidgetIt
 
     // get resa number from item
     int resa_nb = this->RESA_find_resa_nb_selected(item);
+    if (resa_nb != this->sortie_lastSelectedResaNb)
+    {
+        // this->sortie_resaPasswordValidated = false;
+        // this->sortie_resaForcedByAdmin = false;
+        this->sortie_lastSelectedResaNb = resa_nb;
+        this->ui->SORTIE_lineEdit_resa_mdp->clear();
+    }
 
     SORTIE_refresh_kits_of_resa_table(resa_nb);
 
@@ -1914,9 +1929,9 @@ void MainWindow::SORTIE_refresh_kits_of_resa_table(int i_resa_nb)
             if (resa_elem->getId_resa() == i_resa_nb)
             {
 
-                    p_kit = GESKIT_find_kit_by_id(resa_elem->getId_kit());
-                    new QListWidgetItem(p_kit->toString(), this->ui->SORTIE_listWidget_resa_kitsOfResa);
-                    this->kitListSortie_kitsOfResaView.push_back(p_kit);
+                p_kit = GESKIT_find_kit_by_id(resa_elem->getId_kit());
+                new QListWidgetItem(p_kit->toString(), this->ui->SORTIE_listWidget_resa_kitsOfResa);
+                this->kitListSortie_kitsOfResaView.push_back(p_kit);
             }
         }
 
@@ -1960,6 +1975,45 @@ void MainWindow::SORTIE_refresh_kits_of_resa_table(int i_resa_nb)
             }
             cnt++;
         }
+    }
+    SORTIE_refresh_resa_password_validation_state();
+}
+
+void MainWindow::SORTIE_refresh_resa_password_validation_state()
+{
+    bool resa_selected = (this->sortie_lastSelectedResaNb != -1) && (this->kitListSortie_kitsOfResaView.empty() == false);
+    bool enabled = resa_selected && (this->sortie_resaPasswordValidated == false);
+
+    this->ui->SORTIE_groupBox_resa_password->setEnabled(true);
+    this->ui->SORTIE_lineEdit_resa_mdp->setEnabled(enabled);
+    this->ui->SORTIE_checkBox_resa_mdpadmin->setEnabled(enabled);
+    this->ui->SORTIE_pushButton_validate_mdp_sortie->setEnabled(enabled);
+    this->ui->SORTIE_label_resa_password_user->setText(this->sortie_user.getEmail());
+
+    if (this->ui->SORTIE_checkBox_resa_mdpadmin->isChecked())
+    {
+        this->ui->SORTIE_label_resa_password->setText("Mot de passe admin:");
+        this->ui->SORTIE_label_resa_password_user->setText(this->login_user.getEmail());
+    }
+    else
+    {
+        this->ui->SORTIE_label_resa_password->setText("Mot de passe utilisateur:");
+    }
+
+    if (this->sortie_resaPasswordValidated)
+    {
+        this->ui->SORTIE_label_resa_password_status->setText("Mot de passe valide. Vous pouvez sortir les kits de cette reservation.");
+        this->ui->SORTIE_label_resa_password_status->setStyleSheet("QLabel { color : green; font-weight: bold; }");
+    }
+    else if (resa_selected)
+    {
+        this->ui->SORTIE_label_resa_password_status->setText("Mot de passe requis avant de sortir les kits.");
+        this->ui->SORTIE_label_resa_password_status->setStyleSheet("QLabel { color : red; font-weight: bold; }");
+    }
+    else
+    {
+        this->ui->SORTIE_label_resa_password_status->setText("Selectionnez une reservation pour valider le mot de passe.");
+        this->ui->SORTIE_label_resa_password_status->setStyleSheet("");
     }
 }
 
@@ -2032,10 +2086,10 @@ void MainWindow::SORTIE_refresh_current_resa_list_table(void)
 void MainWindow::on_SORTIE_listWidget_resa_kitsOfResa_itemClicked(QListWidgetItem *item)
 {
     Kit * l_kit = SORTIE_get_kitOfResa_selected();
-    //if kit not out, then enable "sortir" button
+    //if kit not out, then enable actions
     if (l_kit->getIs_out() == false)
     {
-        this->ui->SORTIE_pushButton_sortir->setEnabled(true);
+        this->ui->SORTIE_pushButton_sortir->setEnabled(this->sortie_resaPasswordValidated);
         this->ui->SORTIE_pushButton_retirer_kit_from_resa->setEnabled(true);
     }
     else
@@ -2044,17 +2098,57 @@ void MainWindow::on_SORTIE_listWidget_resa_kitsOfResa_itemClicked(QListWidgetIte
         this->ui->SORTIE_pushButton_retirer_kit_from_resa->setEnabled(false);
     }
 }
+
+void MainWindow::on_SORTIE_checkBox_resa_mdpadmin_clicked(bool checked)
+{
+    Q_UNUSED(checked);
+    SORTIE_refresh_resa_password_validation_state();
+}
+
+void MainWindow::on_SORTIE_pushButton_validate_mdp_sortie_clicked()
+{
+    if ((this->sortie_lastSelectedResaNb == -1) || this->kitListSortie_kitsOfResaView.empty())
+    {
+        GEN_raise_popup_warning("Selectionnez une reservation avant de verifier le mot de passe.");
+        SORTIE_refresh_resa_password_validation_state();
+        return;
+    }
+
+    bool forced_by_admin = this->ui->SORTIE_checkBox_resa_mdpadmin->isChecked();
+    Utilisateur * user_to_check = forced_by_admin ? &this->login_user : &this->sortie_user;
+    QString mdp_user_sha1 = g_connect_db.get_sha1_from_Qstring(this->ui->SORTIE_lineEdit_resa_mdp->text());
+    if (mdp_user_sha1 != user_to_check->getMdp())
+    {
+        GEN_raise_popup_warning("Erreur dans le mot de passe.");
+        return;
+    }
+
+    this->sortie_resaPasswordValidated = true;
+    this->sortie_resaForcedByAdmin = forced_by_admin;
+    this->ui->SORTIE_lineEdit_resa_mdp->clear();
+    SORTIE_refresh_resa_password_validation_state();
+    if (this->ui->SORTIE_listWidget_resa_kitsOfResa->selectedItems().empty() == false)
+    {
+        on_SORTIE_listWidget_resa_kitsOfResa_itemClicked(this->ui->SORTIE_listWidget_resa_kitsOfResa->currentItem());
+    }
+    GEN_raise_popup_info("Le mot de passe est validé");
+}
+
 ///
 /// \brief MainWindow::on_SORTIE_pushButton_sortir_clicked: Function called when "Sortir" Button is called inside main window
 ///
 void MainWindow::on_SORTIE_pushButton_sortir_clicked()
 {
+    if (this->sortie_resaPasswordValidated == false)
+    {
+        GEN_raise_popup_warning("Veuillez valider le mot de passe de la reservation avant de sortir un kit.");
+        return;
+    }
+
     Kit * l_kit = SORTIE_get_kitOfResa_selected();
     this->p_popupSortirResa = new (PopupSortirResa);
     this->p_popupSortirResa->setMode(E_MODE_SORTIE);
-    this->p_popupSortirResa->setUser_basic(&this->sortie_user);
-    this->p_popupSortirResa->setUser_admin(&this->login_user);
-    this->p_popupSortirResa->setUser(&this->sortie_user); //set active user to "sortie_user" by default.
+    this->p_popupSortirResa->setUser(&this->sortie_user);
     this->p_popupSortirResa->setP_kit(l_kit);
     this->p_popupSortirResa->refresh_source_item_list();
     this->p_popupSortirResa->setWindowTitle(l_kit->getNom());
@@ -2072,9 +2166,10 @@ void MainWindow::on_SORTIE_pushButton_sortir_clicked()
 /////
 void MainWindow::on_SORTIE_popupSortirResaPushSortir()
 {
-    bool forced_by_admin;
+    bool forced_by_admin_from_popup;
+    bool forced_by_admin = this->sortie_resaForcedByAdmin;
     QString optional_text = "";
-    if (this->p_popupSortirResa->checkIfOk(&forced_by_admin, &optional_text) == true)
+    if (this->p_popupSortirResa->checkIfOk(&forced_by_admin_from_popup, &optional_text) == true)
     {
         SORTIE_sortir_kit(&forced_by_admin, &optional_text);
         delete(this->p_popupSortirResa);
@@ -2118,7 +2213,7 @@ void MainWindow::SORTIE_sortir_kit(bool * i_forced_by_admin, QString *i_optional
         {
             g_connect_db.insert_log_by_user_and_kit(p_kit,&l_user,"-----> La sortie du kit a été signée par l'administrateur '"+this->login_user.getUtinfo()+"' (en l'absence de "+l_user.getUtinfo()+").");
         }
-        if (i_optional_text->isEmpty() !=  false) // if an optionnal string has been set by user
+        if (i_optional_text->isEmpty() !=  true) // if an optionnal string has been set by user
         {
             g_connect_db.insert_log_by_user_and_kit(p_kit,&l_user,"-----> Message optionnel lié à la sortie: " + *i_optional_text);
         }
@@ -2137,7 +2232,7 @@ void MainWindow::SORTIE_sortir_kit(bool * i_forced_by_admin, QString *i_optional
 
 void MainWindow::on_SORTIE_listWidget_kitsOut_itemClicked(QListWidgetItem *item)
 {
-        this->ui->pushButton_restituerKit->setEnabled(true);
+    this->ui->pushButton_restituerKit->setEnabled(true);
 }
 
 void MainWindow::on_SORTIE_listWidget_kitsOut_itemDoubleClicked(QListWidgetItem *item)
@@ -2153,8 +2248,6 @@ void MainWindow::on_pushButton_restituerKit_clicked()
     Kit * l_kit = SORTIE_get_kitOut_selected();
     this->p_popupSortirResa = new (PopupSortirResa);
     this->p_popupSortirResa->setMode(E_MODE_RESTITUTION);
-    this->p_popupSortirResa->setUser_basic(&this->sortie_user);
-    this->p_popupSortirResa->setUser_admin(&this->login_user);
     this->p_popupSortirResa->setUser(&this->sortie_user);
     this->p_popupSortirResa->setP_kit(l_kit);
     this->p_popupSortirResa->refresh_source_item_list();

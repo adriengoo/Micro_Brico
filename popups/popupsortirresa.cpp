@@ -9,7 +9,6 @@ PopupSortirResa::PopupSortirResa(QWidget *parent)
     , ui(new Ui::PopupSortirResa)
 {
     ui->setupUi(this);
-    ui->label_mdp->setText("Mot de passe utilisateur");
 }
 
 PopupSortirResa::~PopupSortirResa()
@@ -58,13 +57,6 @@ bool PopupSortirResa::checkIfOk(bool * o_forced_by_admin, QString *o_optional_te
 {
     bool returnValue = true;
 
-    //Convert user mdp to sha1
-    QString mdp_user_sha1 = g_connect_db.get_sha1_from_Qstring(this->ui->lineEdit_mdp->text());
-    if (mdp_user_sha1 != this->user->getMdp())
-    {
-        GEN_raise_popup_warning("Erreur dans le mot de passe de l'utilisateur.");
-        returnValue = false;
-    }
     // Check if every items have been verified
     if (this->item_list_dest.size() != p_kit->item_list.size())
     {
@@ -72,8 +64,7 @@ bool PopupSortirResa::checkIfOk(bool * o_forced_by_admin, QString *o_optional_te
         returnValue = false;
     }
 
-    //Get forced by admin checkbox value
-    *o_forced_by_admin = this->ui->checkBox_mdpadmin->isChecked();
+    *o_forced_by_admin = false;
 
     //Get optionnal text
     *o_optional_text = this->ui->lineEdit_optionnal_text->text();
@@ -343,40 +334,3 @@ void PopupSortirResa::setButtonText(const QString &newButtonText)
     buttonText = newButtonText;
     this->ui->pushButton_sortir->setText(buttonText);
 }
-
-
-void PopupSortirResa::on_checkBox_mdpadmin_clicked(bool checked)
-{
-    if (checked)
-    {
-        ui->label_mdp->setText("Mot de passe admin:");
-        this->setUser(this->user_admin);
-    }
-    else
-    {
-
-        ui->label_mdp->setText("Mot de passe utilisateur:");
-        this->setUser(this->user_basic);
-    }
-}
-
-Utilisateur *PopupSortirResa::getUser_admin() const
-{
-    return user_admin;
-}
-
-void PopupSortirResa::setUser_admin(Utilisateur *newUser_admin)
-{
-    user_admin = newUser_admin;
-}
-
-Utilisateur *PopupSortirResa::getUser_basic() const
-{
-    return user_basic;
-}
-
-void PopupSortirResa::setUser_basic(Utilisateur *newUser_basic)
-{
-    user_basic = newUser_basic;
-}
-

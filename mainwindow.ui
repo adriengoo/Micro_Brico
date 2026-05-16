@@ -27,7 +27,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="TAB_ges_user">
        <property name="enabled">
@@ -667,20 +667,20 @@
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_11">
            <item>
-            <widget class="QGroupBox" name="groupBox_3">
-             <property name="title">
-              <string>Qui sort l'objet?</string>
+            <widget class="QFrame" name="frame_6">
+             <property name="frameShape">
+              <enum>QFrame::Shape::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Shadow::Raised</enum>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_10">
               <item>
-               <widget class="QFrame" name="frame_6">
-                <property name="frameShape">
-                 <enum>QFrame::Shape::StyledPanel</enum>
+               <widget class="QGroupBox" name="SORTIE_groupBox_resa_password">
+                <property name="title">
+                 <string>Qui sort ou restitue l'objet?</string>
                 </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Shadow::Raised</enum>
-                </property>
-                <layout class="QVBoxLayout" name="verticalLayout_16">
+                <layout class="QVBoxLayout" name="SORTIE_verticalLayout_resa_password">
                  <item>
                   <widget class="QLineEdit" name="SORTIE_lineEdit_utinfo">
                    <property name="text">
@@ -698,6 +698,80 @@
                    </property>
                   </widget>
                  </item>
+                 <item>
+                  <widget class="QLabel" name="SORTIE_label_resa_password_status">
+                   <property name="text">
+                    <string>Sortez tous les kits associes avant validation.</string>
+                   </property>
+                   <property name="wordWrap">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="SORTIE_horizontalLayout_resa_password_user">
+                   <item>
+                    <widget class="QLabel" name="SORTIE_label_resa_password_user_title">
+                     <property name="text">
+                      <string>Utilisateur:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="SORTIE_label_resa_password_user">
+                     <property name="text">
+                      <string>????</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="SORTIE_horizontalLayout_resa_password">
+                   <item>
+                    <widget class="QLabel" name="SORTIE_label_resa_password">
+                     <property name="text">
+                      <string>Mot de passe utilisateur:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLineEdit" name="SORTIE_lineEdit_resa_mdp">
+                     <property name="minimumSize">
+                      <size>
+                       <width>150</width>
+                       <height>0</height>
+                      </size>
+                     </property>
+                     <property name="inputMethodHints">
+                      <set>Qt::InputMethodHint::ImhHiddenText|Qt::InputMethodHint::ImhNoAutoUppercase|Qt::InputMethodHint::ImhNoPredictiveText|Qt::InputMethodHint::ImhSensitiveData</set>
+                     </property>
+                     <property name="echoMode">
+                      <enum>QLineEdit::EchoMode::Password</enum>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <widget class="QCheckBox" name="SORTIE_checkBox_resa_mdpadmin">
+                   <property name="text">
+                    <string>Cocher pour signer avec le mdp admin</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="SORTIE_pushButton_validate_mdp_sortie">
+                   <property name="font">
+                    <font>
+                     <bold>true</bold>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>Valider Mot de Passe</string>
+                   </property>
+                  </widget>
+                 </item>
                 </layout>
                </widget>
               </item>
@@ -708,7 +782,7 @@
                 </property>
                 <property name="sizeHint" stdset="0">
                  <size>
-                  <width>1000</width>
+                  <width>40</width>
                   <height>20</height>
                  </size>
                 </property>
@@ -923,7 +997,7 @@
      <x>0</x>
      <y>0</y>
      <width>1446</width>
-     <height>22</height>
+     <height>33</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuLogin">
