@@ -17,6 +17,8 @@
 #include <QDate>
 #include <QLabel>
 #include <QPoint>
+#include <QCompleter>
+#include <QStringListModel>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -108,6 +110,9 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    QCompleter *p_resaUtinfoCompleter;
+    QCompleter *p_sortieUtinfoCompleter;
+    QStringListModel *p_resaUtinfoCompleterModel;
     std::vector<Utilisateur*> userList;
     std::vector<Utilisateur*> userListView;
     std::vector<Kit*> kitList; //List of kits as a mirror of Kits in DB
@@ -134,12 +139,14 @@ private:
     bool sortie_resaPasswordValidated;
     bool sortie_resaForcedByAdmin;
     int sortie_lastSelectedResaNb;
+    bool utinfoCompleterShowPending;
     QLabel * p_status_bar_label;
 
     void GEN_raise_popup_info(QString msg);
     void GEN_raise_popup_warning(QString msg);
     int GEN_raise_popup_ask_to_continue(QString msg);
     void closeEvent (QCloseEvent *event);
+    bool eventFilter(QObject *watched, QEvent *event) override;
     void activateWidgets(void);
 
     //-----------Context menu-------------------
@@ -193,6 +200,7 @@ private:
     void RESA_get_kits_by_name(std::vector<Kit *> *from_kits, std::vector<Kit *> *to_kits, QString code);
     QDate RESA_get_next_resa_day(QDate start_date);
     void RESA_refresh_current_resa_list_table();
+    void RESA_refresh_user_utinfo_completer();
     int RESA_find_resa_nb_selected(QListWidgetItem *item);
     void RESA_deactivate_outdated_resa();
     void RESA_sortir_panier_immediatement();

@@ -15,6 +15,8 @@
 #include <QRegularExpression>
 #include <QAction>
 #include <QMenu>
+#include <QEvent>
+#include <QLineEdit>
 
 
 #define DAY_OF_RESA 5
@@ -37,7 +39,32 @@ MainWindow::MainWindow(QWidget *parent)
     this->sortie_resaPasswordValidated = false;
     this->sortie_resaForcedByAdmin = false;
     this->sortie_lastSelectedResaNb = -1;
+    this->utinfoCompleterShowPending = false;
     SORTIE_refresh_resa_password_validation_state();
+
+    this->p_resaUtinfoCompleterModel = new QStringListModel(this);
+    this->p_resaUtinfoCompleter = new QCompleter(this->p_resaUtinfoCompleterModel, this);
+    this->p_sortieUtinfoCompleter = new QCompleter(this->p_resaUtinfoCompleterModel, this);
+    auto configureUtinfoCompleter = [](QCompleter *completer) {
+        completer->setCaseSensitivity(Qt::CaseInsensitive);
+        completer->setFilterMode(Qt::MatchContains);
+        completer->setCompletionMode(QCompleter::PopupCompletion);
+        completer->setMaxVisibleItems(12);
+    };
+    configureUtinfoCompleter(this->p_resaUtinfoCompleter);
+    configureUtinfoCompleter(this->p_sortieUtinfoCompleter);
+    this->ui->RESA_lineEdit_resa_utinfo_user->setCompleter(this->p_resaUtinfoCompleter);
+    this->ui->SORTIE_lineEdit_utinfo->setCompleter(this->p_sortieUtinfoCompleter);
+    this->ui->RESA_lineEdit_resa_utinfo_user->installEventFilter(this);
+    this->ui->SORTIE_lineEdit_utinfo->installEventFilter(this);
+    connect(this->p_resaUtinfoCompleter, QOverload<const QString &>::of(&QCompleter::activated), this, [this](const QString &utinfo) {
+        this->ui->RESA_lineEdit_resa_utinfo_user->setText(utinfo);
+        this->on_RESA_pushButton_resa_showResa_clicked();
+    });
+    connect(this->p_sortieUtinfoCompleter, QOverload<const QString &>::of(&QCompleter::activated), this, [this](const QString &utinfo) {
+        this->ui->SORTIE_lineEdit_utinfo->setText(utinfo);
+        this->on_SORTIE_pushButton_resa_showResa_clicked();
+    });
 
     QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL", "dbtest");
 
@@ -154,6 +181,42 @@ MainWindow::~MainWindow()
 void MainWindow::closeEvent (QCloseEvent *event)
 {
     delete this;
+}
+
+bool MainWindow::eventFilter(QObject *watched, QEvent *event)
+{
+    QLineEdit *utinfoLineEdit = nullptr;
+    QCompleter *utinfoCompleter = nullptr;
+
+    if (watched == this->ui->RESA_lineEdit_resa_utinfo_user)
+    {
+        utinfoLineEdit = this->ui->RESA_lineEdit_resa_utinfo_user;
+        utinfoCompleter = this->p_resaUtinfoCompleter;
+    }
+    else if (watched == this->ui->SORTIE_lineEdit_utinfo)
+    {
+        utinfoLineEdit = this->ui->SORTIE_lineEdit_utinfo;
+        utinfoCompleter = this->p_sortieUtinfoCompleter;
+    }
+
+    if (utinfoLineEdit != nullptr
+        && utinfoLineEdit->isEnabled()
+        && (event->type() == QEvent::FocusIn || event->type() == QEvent::MouseButtonPress)
+        && utinfoCompleter->popup()->isVisible() == false
+        && this->utinfoCompleterShowPending == false)
+    {
+        this->utinfoCompleterShowPending = true;
+        QTimer::singleShot(0, this, [this, utinfoLineEdit, utinfoCompleter]() {
+            this->utinfoCompleterShowPending = false;
+            if (utinfoLineEdit->isEnabled())
+            {
+                utinfoCompleter->setCompletionPrefix(utinfoLineEdit->text());
+                utinfoCompleter->complete();
+            }
+        });
+    }
+
+    return QMainWindow::eventFilter(watched, event);
 }
 
 void MainWindow::on_actionAfficher_les_logs_appli_triggered()
@@ -597,6 +660,7 @@ void MainWindow::GESUSER_refresh_user_list_from_server(std::vector<Utilisateur *
 
     //Get every kits on server
     g_connect_db.select_all_users(i_list);
+    RESA_refresh_user_utinfo_completer();
 }
 
 void MainWindow::GESUSER_push_back_new_user_on_table(Utilisateur *user, int row)
@@ -1081,6 +1145,7 @@ void MainWindow::clean_HMI(void)
     g_utils.clearList(&this->userList);
     g_utils.clearList(&this->kitList);
     g_utils.clearList(&this->resaList);
+    RESA_refresh_user_utinfo_completer();
 
 }
 
@@ -1802,6 +1867,23 @@ void MainWindow::RESA_refresh_current_resa_list_table(void)
             prev_id_resa = resa_elem->getId_resa();
         }
     }
+}
+
+void MainWindow::RESA_refresh_user_utinfo_completer()
+{
+    QStringList utinfoList;
+
+    for (const auto& user_elem : this->userList)
+    {
+        const QString utinfo = user_elem->getUtinfo();
+        if (utinfo.isEmpty() == false && utinfoList.contains(utinfo, Qt::CaseInsensitive) == false)
+        {
+            utinfoList.append(utinfo);
+        }
+    }
+
+    utinfoList.sort(Qt::CaseInsensitive);
+    this->p_resaUtinfoCompleterModel->setStringList(utinfoList);
 }
 
 
