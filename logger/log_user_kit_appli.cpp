@@ -34,6 +34,8 @@ void log_user_kit_appli::update_logs_from_kit(int i_max_lines)
         this->ui->textEdit->insertPlainText(elem->getText());
         this->ui->textEdit->insertPlainText("\n");
     }
+    this->ui->textEdit->moveCursor(QTextCursor::Start);
+    this->ui->textEdit->ensureCursorVisible();
 }
 
 void log_user_kit_appli::update_logs_from_user(int i_max_lines)
@@ -46,4 +48,6 @@ void log_user_kit_appli::update_logs_from_user(int i_max_lines)
         this->ui->textEdit->insertPlainText(elem->getText());
         this->ui->textEdit->insertPlainText("\n");
     }
+    this->ui->textEdit->moveCursor(QTextCursor::Start);
+    this->ui->textEdit->ensureCursorVisible();
 }

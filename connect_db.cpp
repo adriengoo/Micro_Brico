@@ -22,7 +22,7 @@ void Connect_db::select_logs_by_kit(std::vector<Log *> *o_log, Kit *i_kit, int i
     QSqlQuery query  = QSqlQuery(this->db);
     QString datestr;
     QDateTime datetime;
-    QString exec_string = "select text, id_user, date from log where id_kit = "+ QString::number(i_kit->getIdKit())+ " order by date limit "+QString::number(i_max_lines) ;
+    QString exec_string = "select text, id_user, date from log where id_kit = "+ QString::number(i_kit->getIdKit())+ " order by date desc" ;
 
     runQuery(query, exec_string);
     while (query.next())
@@ -45,7 +45,7 @@ void Connect_db::select_logs_by_user(std::vector<Log *> *o_log, Utilisateur *i_u
     QSqlQuery query  = QSqlQuery(this->db);
     QString datestr;
     QDateTime datetime;
-    QString exec_string = "select text, id_kit, date from log where id_user = "+ QString::number(i_user->getId())+ " order by date limit "+QString::number(i_max_lines) ;
+    QString exec_string = "select text, id_kit, date from log where id_user = "+ QString::number(i_user->getId())+ " order by date desc" ;
 
     runQuery(query, exec_string);
     while (query.next())

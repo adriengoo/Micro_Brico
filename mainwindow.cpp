@@ -14,6 +14,7 @@
 #include <QMessageBox>
 #include <QRegularExpression>
 #include <QAction>
+#include <QMenu>
 
 
 #define DAY_OF_RESA 5
@@ -126,6 +127,8 @@ MainWindow::MainWindow(QWidget *parent)
     this->ui->RESA_calendarWidget->setDateRange(QDate::currentDate(), maxDate);
     this->ui->RESA_calendarWidget->setSelectedDate(this->RESA_get_next_resa_day(QDate::currentDate())); // Set Selected date to next friday
     this->on_RESA_calendarWidget_clicked(this->RESA_get_next_resa_day(QDate::currentDate()));
+    this->ui->RESA_pushButton_reserver->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(this->ui->RESA_pushButton_reserver, &QPushButton::customContextMenuRequested, this, &MainWindow::on_RESA_pushButton_reserver_customContextMenuRequested);
 
     // Disable menu items that should not be activable if no user is connected
     this->ui->actionEffacer_les_reservations_pass_es->setEnabled(false);
@@ -1587,6 +1590,10 @@ void MainWindow::RESA_refresh_basket_kit_list_table(void)
     {
         ui->RESA_pushButton_reserver->setEnabled(true);
     }
+    else if ((this->login_user.getPrivilege() == E_admin) && (this->kitListBasket_view.size() >0))
+    {
+        ui->RESA_pushButton_reserver->setEnabled(true);
+    }
     else
     {
         ui->RESA_pushButton_reserver->setEnabled(false);
@@ -1663,6 +1670,77 @@ void MainWindow::on_RESA_pushButton_reserver_clicked()
 
 }
 
+void MainWindow::on_RESA_pushButton_reserver_customContextMenuRequested(const QPoint &pos)
+{
+    if ((this->login_user.getIs_logged_on() == false) || (this->login_user.getPrivilege() != E_admin))
+    {
+        return;
+    }
+
+    QMenu menu(this);
+    QAction sortie_immediate_action("Sortir immediatement le panier", this);
+    sortie_immediate_action.setEnabled(this->kitListBasket_view.empty() == false);
+    connect(&sortie_immediate_action, &QAction::triggered, this, &MainWindow::RESA_sortir_panier_immediatement);
+    menu.addAction(&sortie_immediate_action);
+    menu.exec(this->ui->RESA_pushButton_reserver->mapToGlobal(pos));
+}
+
+void MainWindow::RESA_sortir_panier_immediatement()
+{
+    int sortie_nb = 0;
+    Utilisateur l_user;
+    bool has_errors = false;
+    QDate start_date = QDate::currentDate();
+
+    if (this->kitListBasket_view.empty())
+    {
+        this->GEN_raise_popup_warning("Impossible de sortir immediatement un panier vide.");
+        return;
+    }
+
+    has_errors = g_connect_db.get_user_by_utinfo(this->ui->RESA_lineEdit_resa_utinfo_user->text(), &l_user);
+    if (has_errors == true)
+    {
+        this->GEN_raise_popup_warning("Impossible de sortir immediatement pour l'utilisateur: **" + this->ui->RESA_lineEdit_resa_utinfo_user->text()+"**");
+        return;
+    }
+
+    for(const auto& kit_elem : this->kitListBasket_view)
+    {
+        std::vector<Item *> items_to_take_out;
+        g_connect_db.select_items_by_kit(kit_elem);
+        for(const auto& item_elem : kit_elem->item_list)
+        {
+            Item *p_item = new Item(item_elem->getId(),
+                                    item_elem->getName(),
+                                    item_elem->getForkey(),
+                                    item_elem->getQuantity_init(),
+                                    item_elem->getQuantity_current(),
+                                    item_elem->getQuantity_current());
+            items_to_take_out.push_back(p_item);
+        }
+        QString log_str = g_connect_db.update_items_quantity_of_kit(kit_elem, items_to_take_out);
+
+        g_connect_db.start_sortie();
+        sortie_nb = g_connect_db.guess_next_sortie_nb();
+        g_connect_db.add_sortie_from_kit(kit_elem, l_user.getId(), start_date, sortie_nb);
+        g_connect_db.insert_log_by_user_and_kit(kit_elem,&l_user,"L'utilisateur '"+l_user.getUtinfo()+"' a sorti immediatement le kit '"+kit_elem->getNom()+"' (code: "+kit_elem->getCode()+", numero de sortie: "+QString::number(sortie_nb)+") depuis le panier de reservation.");
+        g_connect_db.insert_log_by_user_and_kit(kit_elem,&l_user,"-----> Sortie immediate effectuee par l'administrateur '"+this->login_user.getUtinfo()+"' sans verification des quantites d'items.");
+        g_connect_db.insert_log_by_user_and_kit(kit_elem,&l_user,log_str);
+        g_connect_db.end_sortie();
+
+        kit_elem->setIs_in_basket(false);
+        kit_elem->setIs_out(true);
+        g_utils.clearList(&items_to_take_out);
+    }
+
+    GEN_raise_popup_info("La sortie immediate du panier est bien prise en compte.");
+    this->ui->RESA_listWidget_panierResa->clear();
+    this->kitListBasket_view.clear();
+    this->GESKIT_refresh_kit_list_from_server(&this->kitList);
+    this->on_RESA_pushButton_getkit_resa_clicked();
+    this->on_RESA_pushButton_resa_showResa_clicked();
+}
 
 void MainWindow::on_RESA_pushButton_resa_showResa_clicked()
 {

@@ -16,6 +16,7 @@
 #include <QListWidgetItem>
 #include <QDate>
 #include <QLabel>
+#include <QPoint>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -85,6 +86,7 @@ private slots:
     void on_RESA_listWidget_resa_currentResa_itemClicked(QListWidgetItem *item);
     void on_RESA_pushButton_suppr_resa_clicked();
     void on_RESA_pushButton_reserver_clicked();
+    void on_RESA_pushButton_reserver_customContextMenuRequested(const QPoint &pos);
     void on_RESA_lineEdit_resa_utinfo_user_returnPressed();
 
     //-----------Slots SORTIES-------------------
@@ -193,6 +195,7 @@ private:
     void RESA_refresh_current_resa_list_table();
     int RESA_find_resa_nb_selected(QListWidgetItem *item);
     void RESA_deactivate_outdated_resa();
+    void RESA_sortir_panier_immediatement();
 
     //-----------Sorties-------------------
     Kit *SORTIE_get_kitOfResa_selected();
