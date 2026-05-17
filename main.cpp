@@ -56,6 +56,20 @@ static QString windows11StyleSheet()
             border-top: 1px solid #dadada;
         }
 
+        QSplitter::handle {
+            background-color: #d8d8d8;
+        }
+
+        QSplitter::handle:vertical {
+            height: 6px;
+            margin: 2px 0;
+            border-radius: 3px;
+        }
+
+        QSplitter::handle:hover {
+            background-color: #0067c0;
+        }
+
         QTabWidget::pane {
             border: 1px solid #d0d0d0;
             border-radius: 7px;
@@ -100,7 +114,7 @@ static QString windows11StyleSheet()
             left: 10px;
             padding: 0 6px;
             color: #2b2b2b;
-            background-color: #f3f3f3;
+            background-color: rgba(255, 255, 255,50);
         }
 
         QFrame[frameShape="6"], QFrame[frameShape="StyledPanel"] {
@@ -152,7 +166,7 @@ static QString windows11StyleSheet()
         }
 
         QLabel {
-            background-color: #ffffff;
+            background-color: rgba(255, 255, 255,50);
  
         }
 

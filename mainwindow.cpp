@@ -35,6 +35,9 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    this->ui->splitter_main_logs->setStretchFactor(0, 1);
+    this->ui->splitter_main_logs->setStretchFactor(1, 0);
+    this->ui->splitter_main_logs->setSizes({650, 140});
     this->GESKIT_show_broken_kits = true;
     this->sortie_resaPasswordValidated = false;
     this->sortie_resaForcedByAdmin = false;
