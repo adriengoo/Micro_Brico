@@ -94,7 +94,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     //Init default buttons status
     this->GESKIT_enable_geskit_buttons(false);
-    this->GESUSER_enable_GESUSER_buttons(false);
     // Init of the connection status slot
     this->login_user.setIs_logged_on(true);
     update_connection_status(false);
@@ -419,15 +418,6 @@ void MainWindow::on_actionNouvel_Utilisateur_triggered()
     GESUSER_add_new_user();
 }
 
-void MainWindow::on_GESUSER_pushButton_add_user_clicked()
-{
-    GESUSER_add_new_user();
-}
-
-void MainWindow::on_GESUSER_pushButton_modify_user_clicked()
-{
-    GESUSER_edit_user();
-}
 
 void MainWindow::on_GESUSER_tableWidget_user_cellDoubleClicked(int row, int column)
 {
@@ -435,10 +425,6 @@ void MainWindow::on_GESUSER_tableWidget_user_cellDoubleClicked(int row, int colu
 }
 
 
-void MainWindow::on_GESUSER_tableWidget_user_cellClicked(int row, int column)
-{
-    GESUSER_enable_GESUSER_buttons(true);
-}
 
 // ^^^^^^ POPUP ADD USER SECTION ^^^^^^
 //---------------------------------------------------------
@@ -510,7 +496,6 @@ void MainWindow::on_GESUSER_pushButton_getuser_clicked()
     }
 
 
-    GESUSER_enable_GESUSER_buttons(false);
     MainWindow::GESUSER_refresh_user_table();
 }
 
@@ -631,11 +616,6 @@ void MainWindow::GESUSER_clear_display()
     this->ui->GESUSER_tableWidget_user->blockSignals(false);
 }
 
-void MainWindow::GESUSER_enable_GESUSER_buttons(bool i_enable)
-{
-    this->ui->GESUSER_pushbutton_deleteUser->setEnabled(i_enable);
-    this->ui->GESUSER_pushButton_modify_user->setEnabled(i_enable);
-}
 
 Utilisateur *MainWindow::GESUSER_get_user_selected()
 {
@@ -1093,13 +1073,6 @@ void MainWindow::GESKIT_display_kit_logs()
 
 
 
-void MainWindow::on_GESUSER_pushbutton_deleteUser_clicked()
-{
-    this->p_popupDeleteUser = new (Delete_user);
-    this->p_popupDeleteUser->show();
-    QObject::connect(this->p_popupDeleteUser->getOkButton(), &QDialogButtonBox::accepted, this, &MainWindow::on_popupDelete_ok);
-    QObject::connect(this->p_popupDeleteUser->getOkButton(), &QDialogButtonBox::rejected, this, &MainWindow::on_popupDelete_destroyed);
-}
 
 void MainWindow::on_popupDelete_destroyed()
 {

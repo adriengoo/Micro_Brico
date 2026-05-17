@@ -60,10 +60,6 @@ private slots:
 
     //-----------Slots GESUSER-------------------
     void on_GESUSER_pushButton_getuser_clicked();
-    void on_GESUSER_pushButton_add_user_clicked();
-    void on_GESUSER_pushbutton_deleteUser_clicked();
-    void on_GESUSER_pushButton_modify_user_clicked();
-    void on_GESUSER_tableWidget_user_cellClicked(int row, int column);
     void on_GESUSER_tableWidget_user_cellDoubleClicked(int row, int column);
 
     //-----------Slots GESKIT-------------------
@@ -168,7 +164,6 @@ private:
     void GESUSER_add_new_user();
     void GESUSER_edit_user();
     void GESUSER_clear_display();
-    void GESUSER_enable_GESUSER_buttons(bool i_enable);
     Utilisateur* GESUSER_get_user_selected();
     void GESUSER_refresh_user_list_from_server(std::vector<Utilisateur*> *i_list);
     void GESUSER_refresh_user_table();
