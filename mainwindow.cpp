@@ -1705,8 +1705,17 @@ void MainWindow::RESA_sortir_panier_immediatement()
         return;
     }
 
+    g_connect_db.set_kit_out_status(&this->kitListBasket_view);
     for(const auto& kit_elem : this->kitListBasket_view)
     {
+        if (kit_elem->getIs_out())
+        {
+            qInfo() << "GESTION RESA: tentative de sortie immediate sans succes pour le kit"
+                    << kit_elem->getNom()
+                    << "(code:" << kit_elem->getCode() << "), car il est deja sorti.";
+            continue;
+        }
+
         std::vector<Item *> items_to_take_out;
         g_connect_db.select_items_by_kit(kit_elem);
         for(const auto& item_elem : kit_elem->item_list)
