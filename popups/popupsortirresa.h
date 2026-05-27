@@ -56,6 +56,8 @@ private:
     Item *get_item_from_id(std::vector<Item *> i_item_list, uint i_id);
     void select_next_item_on_QlistWidget(QListWidget *i_QlistWidget, int i_currentRow);
     void set_spin_box_qty_from_selected_item (void);
+    bool are_all_items_verified() const;
+    void refresh_verification_indicator();
 signals:
     void delete_popup(void);
 };

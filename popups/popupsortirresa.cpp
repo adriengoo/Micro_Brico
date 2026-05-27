@@ -7,8 +7,11 @@
 PopupSortirResa::PopupSortirResa(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::PopupSortirResa)
+    , user(nullptr)
+    , p_kit(nullptr)
 {
     ui->setupUi(this);
+    refresh_verification_indicator();
 }
 
 PopupSortirResa::~PopupSortirResa()
@@ -158,6 +161,45 @@ void PopupSortirResa::set_spin_box_qty_from_selected_item()
 
 }
 
+bool PopupSortirResa::are_all_items_verified() const
+{
+    if (p_kit == nullptr || p_kit->item_list.empty())
+    {
+        return false;
+    }
+
+    if (this->item_list_dest.size() != p_kit->item_list.size())
+    {
+        return false;
+    }
+
+    for (const auto& elem_item : p_kit->item_list)
+    {
+        if (elem_item->getIs_verified() == false)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void PopupSortirResa::refresh_verification_indicator()
+{
+    if (are_all_items_verified())
+    {
+        this->ui->pushButton_popupSortie_pushDest->setText(QString(QChar(0x2713)));
+        this->ui->pushButton_popupSortie_pushDest->setEnabled(false);
+        this->ui->pushButton_popupSortie_pushDest->setStyleSheet("QPushButton { color: green; font-weight: bold; font-size: 24px; }");
+    }
+    else
+    {
+        this->ui->pushButton_popupSortie_pushDest->setText(">>");
+        this->ui->pushButton_popupSortie_pushDest->setEnabled(true);
+        this->ui->pushButton_popupSortie_pushDest->setStyleSheet("");
+    }
+}
+
 Item * PopupSortirResa::get_item_from_id( std::vector<Item*> i_item_list,uint i_id  )
 {
     Item * return_item = NULL;
@@ -188,6 +230,7 @@ void PopupSortirResa::push_item_to_dest_list(int new_quantity)
 
     refresh_source_item_list();
     refresh_dest_item_list();
+    refresh_verification_indicator();
 }
 
 
@@ -226,6 +269,7 @@ void PopupSortirResa::refresh_source_item_list(void)
     // increment selected line in widget
     select_next_item_on_QlistWidget(this->ui->listWidget_popupSortie_ItemSource, row);
     set_spin_box_qty_from_selected_item();
+    refresh_verification_indicator();
 }
 
 void PopupSortirResa::refresh_dest_item_list(void)
@@ -245,6 +289,7 @@ void PopupSortirResa::refresh_dest_item_list(void)
         }
         new QListWidgetItem(text_item, this->ui->listWidget_popupSortie_ItemDest);
     }
+    refresh_verification_indicator();
 }
 
 void PopupSortirResa::on_listWidget_popupSortie_ItemSource_itemDoubleClicked(QListWidgetItem *item)
@@ -291,6 +336,7 @@ void PopupSortirResa::on_listWidget_popupSortie_ItemDest_itemDoubleClicked(QList
     //Refresh everybody
     refresh_source_item_list();
     refresh_dest_item_list();
+    refresh_verification_indicator();
 }
 
 
