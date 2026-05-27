@@ -101,6 +101,7 @@ private slots:
     void on_SORTIE_pushButton_retirer_kit_from_resa_clicked();
     void on_SORTIE_pushButton_endResa_clicked();
     void on_SORTIE_lineEdit_utinfo_returnPressed();
+    void on_SORTIE_lineEdit_resa_mdp_returnPressed();
     void on_SORTIE_checkBox_resa_mdpadmin_clicked(bool checked);
     void on_SORTIE_pushButton_validate_mdp_sortie_clicked();
 

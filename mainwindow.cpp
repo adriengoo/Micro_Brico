@@ -1968,6 +1968,11 @@ void MainWindow::on_SORTIE_lineEdit_utinfo_returnPressed()
     on_SORTIE_pushButton_resa_showResa_clicked();
 }
 
+void MainWindow::on_SORTIE_lineEdit_resa_mdp_returnPressed()
+{
+    on_SORTIE_pushButton_validate_mdp_sortie_clicked();
+}
+
 void MainWindow::on_SORTIE_pushButton_resa_showResa_clicked()
 {
     bool has_errors = false;

@@ -155,7 +155,7 @@ static QString windows11StyleSheet()
             color: #ffffff;
         }
 
-        QLineEdit,  QTextEdit, QPlainTextEdit, QComboBox, QSpinBox, QDoubleSpinBox, QDateEdit {
+        QLineEdit,  QTextEdit, QPlainTextEdit, QComboBox,  QDateEdit {
             background-color: #ffffff;
             border: 1px solid #c9c9c9;
             border-radius: 6px;
@@ -163,6 +163,11 @@ static QString windows11StyleSheet()
             min-height: 20px;
             selection-background-color: #0067c0;
             selection-color: #ffffff;
+        }
+
+        QSpinBox , QDoubleSpinBox{
+            background-color: rgba(255, 255, 255,50);
+ 
         }
 
         QLabel {
@@ -174,7 +179,7 @@ static QString windows11StyleSheet()
             border-color: #9f9f9f;
         }
 
-        QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QComboBox:focus, QSpinBox:focus, QDoubleSpinBox:focus, QDateEdit:focus {
+        QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QComboBox:focus, QDateEdit:focus {
             background-color: #ffffff;
             border: 1px solid #0067c0;
             border-bottom: 2px solid #0067c0;
