@@ -2128,8 +2128,15 @@ void MainWindow::SORTIE_refresh_resa_password_validation_state()
 {
     bool resa_selected = (this->sortie_lastSelectedResaNb != -1) && (this->kitListSortie_kitsOfResaView.empty() == false);
     bool kit_out_selected = this->ui->SORTIE_listWidget_kitsOut->selectedItems().empty() == false;
+    
     bool user_selected = this->ui->SORTIE_lineEdit_utinfo->text().isEmpty() == false;
     bool enabled = user_selected && (resa_selected || kit_out_selected) && (this->sortie_resaPasswordValidated == false);
+
+    // permet de focus sur la dernière liste cliquée et d'afficher le bon texte
+    if (kit_out_selected && this->ui->SORTIE_listWidget_kitsOut->hasFocus())
+    {
+        resa_selected = false;
+    }
 
     this->ui->SORTIE_groupBox_resa_password->setEnabled(true);
     this->ui->SORTIE_lineEdit_resa_mdp->setEnabled(enabled);
