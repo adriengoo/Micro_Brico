@@ -1580,6 +1580,7 @@ void MainWindow::RESA_refresh_kit_list_table(void)
         {
             p_item->setForeground(brush_free);
         }
+        p_item->setToolTip(p_item->text());
     }
 }
 

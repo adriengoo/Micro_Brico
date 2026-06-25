@@ -432,7 +432,7 @@
                        </size>
                       </property>
                       <property name="title">
-                       <string>Kits disponibles</string>
+                       <string>Kits disponibles (double cliquez pour mettre dans le panier)</string>
                       </property>
                       <layout class="QHBoxLayout" name="horizontalLayout_7">
                        <item>
@@ -962,7 +962,7 @@
      <x>0</x>
      <y>0</y>
      <width>1674</width>
-     <height>33</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuLogin">
