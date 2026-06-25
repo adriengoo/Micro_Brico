@@ -28,6 +28,7 @@ private:
     bool is_booked;
     bool is_in_basket;
     bool is_in_resa_view;
+    int id_user_booked;
 
     //SORTIE related variables
     bool is_out;
@@ -85,6 +86,9 @@ public:
 
     int getId_user_out() const;
     void setId_user_out(int newId_user_out);
+    
+    int getId_user_booked() const;
+    void setId_user_booked(int newId_user_booked);
 
 signals:
 };

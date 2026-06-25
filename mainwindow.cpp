@@ -1512,7 +1512,6 @@ void MainWindow::RESA_get_kits_by_name(std::vector<Kit*> *from_kits, std::vector
 //Function finding every kit with a specific code in from_kit list, and store those kit in to_kits list
 void MainWindow::RESA_get_kits_by_code(std::vector<Kit*> *from_kits, std::vector<Kit*> *to_kits, QString code)
 {
-
     for(const auto& kit_elem : *from_kits)
     {
         if (kit_elem->getIs_in_resa_view())
@@ -1538,6 +1537,8 @@ void MainWindow::RESA_refresh_kit_list_table(void)
     QBrush brush_free;
     QBrush brush_basket;
     QBrush brush_enpanne;
+    Utilisateur user;
+    QString msg; 
     // Define brush to display kit free in kit reservation list
     brush_free.setColor(Qt::GlobalColor::blue);
     brush_free.setStyle(Qt::SolidPattern);
@@ -1561,7 +1562,13 @@ void MainWindow::RESA_refresh_kit_list_table(void)
         }
         else if (kit_elem->getIs_booked())
         {
-            p_item->setText(p_item->text() + " (déjà réservé à cette date)");
+            msg = p_item->text() + " - déjà réservé à cette date";
+            if (this->login_user.getPrivilege() == E_admin)
+            {
+                g_connect_db.get_user_by_id(kit_elem->getId_user_booked(), &user);
+                msg = msg + " par :" + user.getUtinfo();
+            } 
+            p_item->setText(msg);
             p_item->setBackground(brush_booked);
         }
         else if (kit_elem->getEn_panne())

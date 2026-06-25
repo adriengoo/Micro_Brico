@@ -708,11 +708,12 @@ void  Connect_db::set_kit_booked_status (std::vector<Kit*> *i_kits, QDate i_date
                 &&(i_date == elem_resa->getStart_date()))
             {
                 is_booked = true;
+                elem_kit->setId_user_booked(elem_resa->getId_user());
+                elem_kit->setIs_booked(is_booked);
                 break;
             }
         }
 
-        elem_kit->setIs_booked(is_booked);
     }
 
 

@@ -203,6 +203,16 @@ void Kit::setId_user_out(int newId_user_out)
     id_user_out = newId_user_out;
 }
 
+int Kit::getId_user_booked() const
+{
+    return id_user_booked;
+}
+
+void Kit::setId_user_booked(int newId_user_booked)
+{
+    id_user_booked = newId_user_booked;
+}
+
 Kit::Kit(QObject *parent)
     : QObject{parent}
 {}
