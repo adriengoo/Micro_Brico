@@ -20,7 +20,7 @@
 
 
 #define DAY_OF_RESA 5
-static QString VERSION = "1.0.5";
+static QString VERSION = "1.1.0";
 
 QPointer<LogBrowser> logBrowser;
 
