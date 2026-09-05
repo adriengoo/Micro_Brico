@@ -10,7 +10,7 @@ FULL_PATH = os.path.join(ROOT_CSV_PATH, CSV_IN_FILE_NAME)
 
 HOST_IP = "localhost"
 HOST_port = 3306
-DB_NAME = "db_dev"
+DB_NAME = "dbtest"
 
 DB_USER_NAME = "adrien"
 DB_PSWD = "adrien"

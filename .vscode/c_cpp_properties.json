@@ -3,15 +3,15 @@
   "configurations": [
     {
       "name": "Qt 6.7.3 MinGW Debug",
-      "compilerPath": "C:/Qt/Tools/mingw1120_64/bin/g++.exe",
+      "compilerPath": "C:/Qt/Tools/mingw1310_64/bin/g++.exe",
       "intelliSenseMode": "windows-gcc-x64",
       "cppStandard": "c++17",
       "cStandard": "c17",
-      "compileCommands": "${workspaceFolder}/build/Desktop_Qt_6_7_3_MinGW_64_bit-Debug/compile_commands.json",
+      "compileCommands": "${workspaceFolder}/build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug/compile_commands.json",
       "includePath": [
         "${workspaceFolder}/**",
         "${workspaceFolder}/build/Desktop_Qt_6_7_3_MinGW_64_bit-Debug/**",
-        "C:/Qt/6.7.3/mingw_64/include/**"
+        "C:/Qt/6.11.2/mingw_64/include/**"
       ],
       "defines": [
         "QT_WIDGETS_LIB",

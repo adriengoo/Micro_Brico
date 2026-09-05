@@ -1,5 +1,5 @@
 ####### Prérequis pour travailler sur le projet: 
-    - Installer QT Creator 12.0.2 (avec QT 6.6.1, je ne sais plus si QTCreator installe QT 6.6.1 lors de son installation)
+    - Installer QT Creator 12.0.2 (avec QT 6.11.2, je ne sais plus si QTCreator installe QT 6.11.2 lors de son installation)
     - Installer mysql 8.0.35 https://dev.mysql.com/downloads/installer/
     - Installer Mysql workbench
     - Installer github desktop
@@ -29,8 +29,8 @@
     Il faut récupérer le driver qt correspondant à la version de QT présent sur la machine et au compilateur présent sur le PC (mingw probablement)
     Le lien suivant propose de télécharger le driver https://github.com/thecodemonkey86/qt_mysql_driver/releases
     Une fois le dossier zippé téléchargé, déziper, puis: 
-        copier coller les 3 DLL libcrypto-3-x64, libmysql, libssl-3-x64 dans le dossier C:\Qt\QT\6.6.1\mingw_64\bin
-        copier coller les libs contenues dans le dossier sqldrivers ici: C:\Qt\QT\6.6.1\mingw_64\plugins\sqldrivers
+        copier coller les 3 DLL libcrypto-3-x64, libmysql, libssl-3-x64 dans le dossier C:\Qt\QT\6.11.2\mingw_64\bin
+        copier coller les libs contenues dans le dossier sqldrivers ici: C:\QT\6.11.2\mingw_64\plugins\sqldrivers
 
 ####### Liquibase
 

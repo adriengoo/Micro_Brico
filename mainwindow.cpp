@@ -38,7 +38,7 @@ MainWindow::MainWindow(QWidget *parent)
     this->ui->splitter_main_logs->setStretchFactor(0, 1);
     this->ui->splitter_main_logs->setStretchFactor(1, 0);
     this->ui->splitter_main_logs->setSizes({650, 140});
-    this->GESKIT_show_broken_kits = true;
+    this->GESKIT_only_show_broken_kits = false;
     this->sortie_resaPasswordValidated = false;
     this->sortie_resaForcedByAdmin = false;
     this->sortie_lastSelectedResaNb = -1;
@@ -78,7 +78,7 @@ MainWindow::MainWindow(QWidget *parent)
     db.setPassword("PAPYRUS");
 #else //Debug compilation
     db.setHostName("localhost");
-    db.setDatabaseName("db_dev");
+    db.setDatabaseName("dbtest");
     db.setUserName("adrien");
     db.setPassword("adrien");
     VERSION += "_DEBUG";
@@ -275,11 +275,11 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event)
     //Context menu for GESKIT table widget only
     if (this->focusWidget() == this->ui->GESKIT_tableWidget_kit)
     {
-        QAction show_broken_kits_action("Afficher les kits en panne", this);
+        QAction show_broken_kits_action("Afficher uniquement les kits en panne", this);
         show_broken_kits_action.setCheckable(true);
-        show_broken_kits_action.setChecked(this->GESKIT_show_broken_kits);
+        show_broken_kits_action.setChecked(this->GESKIT_only_show_broken_kits);
         connect(&show_broken_kits_action, &QAction::triggered, this, [this](bool checked) {
-            this->GESKIT_show_broken_kits = checked;
+            this->GESKIT_only_show_broken_kits = checked;
             this->on_GESKIT_pushButton_getkit_clicked();
         });
 
@@ -847,12 +847,12 @@ void MainWindow::on_GESKIT_pushButton_getkit_clicked()
         }
     }
 
-    if (this->GESKIT_show_broken_kits == false)
+    if (this->GESKIT_only_show_broken_kits == true)
     {
         std::vector<Kit*> filtered_kits;
         for(const auto& kit_elem : this->kitListGeskit_view)
         {
-            if (kit_elem->getEn_panne() == false)
+            if (kit_elem->getEn_panne() == true)
             {
                 filtered_kits.push_back(kit_elem);
             }

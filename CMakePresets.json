@@ -7,20 +7,20 @@
     },
     "configurePresets": [
         {
-            "name": "qt-6.7.3-mingw-debug",
-            "displayName": "Qt 6.7.3 MinGW Debug",
+            "name": "qt-6.11.2-mingw-debug",
+            "displayName": "Qt 6.11.2 MinGW Debug",
             "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/Desktop_Qt_6_7_3_MinGW_64_bit-Debug",
+            "binaryDir": "${sourceDir}/build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_PREFIX_PATH": "C:/Qt/6.7.3/mingw_64",
-                "CMAKE_CXX_COMPILER": "C:/Qt/Tools/mingw1120_64/bin/g++.exe",
-                "CMAKE_C_COMPILER": "C:/Qt/Tools/mingw1120_64/bin/gcc.exe",
+                "CMAKE_PREFIX_PATH": "C:/Qt/6.11.2/mingw_64",
+                "CMAKE_CXX_COMPILER": "C:/Qt/Tools/mingw1310_64/bin/g++.exe",
+                "CMAKE_C_COMPILER": "C:/Qt/Tools/mingw1310_64/bin/gcc.exe",
                 "CMAKE_MAKE_PROGRAM": "C:/Qt/Tools/Ninja/ninja.exe",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
             },
             "environment": {
-                "PATH": "C:/Qt/Tools/mingw1120_64/bin;C:/Qt/Tools/Ninja;C:/Qt/6.7.3/mingw_64/bin;$penv{PATH}"
+                "PATH": "C:/Qt/Tools/mingw1310_64/bin;C:/Qt/Tools/Ninja;C:/Qt/6.11.2/mingw_64/bin;$penv{PATH}"
             }
         },
         {
@@ -39,15 +39,15 @@
             "description": "",
             "displayName": "",
             "inherits": [
-                "qt-6.7.3-mingw-debug"
+                "qt-6.11.2-mingw-debug"
             ]
         }
     ],
     "buildPresets": [
         {
-            "name": "qt-6.7.3-mingw-debug",
-            "displayName": "Build Qt 6.7.3 MinGW Debug",
-            "configurePreset": "qt-6.7.3-mingw-debug",
+            "name": "qt-6.11.2-mingw-debug",
+            "displayName": "Build Qt 6.11.2 MinGW Debug",
+            "configurePreset": "qt-6.11.2-mingw-debug",
             "targets": [
                 "all"
             ]
