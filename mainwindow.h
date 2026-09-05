@@ -217,6 +217,7 @@ private:
     void SORTIE_restit_kit(bool * i_forced_by_admin, QString *i_optional_text);
     void SORTIE_calculate_remaining_quantity(std::vector<Item *> i_items_returned, std::vector<Item *> i_items_kit );
     void SORTIE_refresh_resa_password_validation_state();
+    void SORTIE_load_kit_items_for_popup(Kit *i_kit);
     void SORTIE_throw_popup_sortie(Kit *i_kit, Utilisateur *i_user, bool i_from_immediate = false);
     void SORTIE_open_next_immediate_popup();
     void SORTIE_finish_immediate_checkout();

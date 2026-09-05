@@ -2256,14 +2256,21 @@ void MainWindow::SORTIE_refresh_current_resa_list_table(void)
 }
 
 ///
+/// \brief MainWindow::SORTIE_load_kit_items_for_popup
+/// Charge les items nécessaires à une popup de sortie ou de restitution.
+///
+void MainWindow::SORTIE_load_kit_items_for_popup(Kit *i_kit)
+{
+    g_connect_db.select_items_by_kit(i_kit);
+}
+
+///
 /// \brief MainWindow::SORTIE_throw_popup_sortie
 /// Ouvre la fenêtre de vérification après avoir chargé les items du kit.
 ///
 void MainWindow::SORTIE_throw_popup_sortie(Kit *i_kit, Utilisateur *i_user, bool i_from_immediate)
 {
-    // Loading items belongs to opening a verification popup, not to a
-    // particular list widget.  This makes the popup usable from both tabs.
-    g_connect_db.select_items_by_kit(i_kit);
+    SORTIE_load_kit_items_for_popup(i_kit);
 
     this->sortie_popup_from_immediate = i_from_immediate;
     this->p_popupSortirResa = new (PopupSortirResa);
@@ -2512,6 +2519,7 @@ void MainWindow::on_pushButton_restituerKit_clicked()
     this->p_popupSortirResa->setMode(E_MODE_RESTITUTION);
     this->p_popupSortirResa->setUser(&this->sortie_user);
     this->p_popupSortirResa->setP_kit(l_kit);
+    SORTIE_load_kit_items_for_popup(l_kit);
     this->p_popupSortirResa->refresh_source_item_list();
     this->p_popupSortirResa->setWindowTitle(l_kit->getNom());
     this->p_popupSortirResa->setButtonText("Restituer");
