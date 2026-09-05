@@ -38,8 +38,9 @@ MainWindow::MainWindow(QWidget *parent)
     this->ui->splitter_main_logs->setStretchFactor(0, 1);
     this->ui->splitter_main_logs->setStretchFactor(1, 0);
     this->ui->splitter_main_logs->setSizes({650, 140});
-    this->GESKIT_only_show_broken_kits = false;
     this->sortie_resaPasswordValidated = false;
+    this->GESKIT_only_show_out_kits = false;
+    this->GESKIT_only_show_broken_kits = false;
     this->sortie_resaForcedByAdmin = false;
     this->sortie_lastSelectedResaNb = -1;
     this->utinfoCompleterShowPending = false;
@@ -283,11 +284,22 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event)
             this->on_GESKIT_pushButton_getkit_clicked();
         });
 
+        QAction show_out_kits_action("Afficher uniquement les kits sortis", this);
+        show_out_kits_action.setCheckable(true);
+        show_out_kits_action.setChecked(this->GESKIT_only_show_out_kits);
+        connect(&show_out_kits_action, &QAction::triggered, this, [this](bool checked) {
+            this->GESKIT_only_show_out_kits = checked;
+            this->on_GESKIT_pushButton_getkit_clicked();
+        });
+
+
         const bool is_kit_selected = this->GESKIT_get_kit_selected() != nullptr;
         this->ui->actionafficher_les_logs_kit->setEnabled(is_kit_selected && this->login_user.getPrivilege() == E_admin);
         this->ui->actiondupliquer_kit->setEnabled(is_kit_selected && this->login_user.getPrivilege() == E_admin);
         this->ui->actionmodifier_kit->setEnabled(is_kit_selected && this->login_user.getPrivilege() == E_admin);
 
+        menu.addAction(&show_out_kits_action);
+        menu.addSeparator();
         menu.addAction(&show_broken_kits_action);
         menu.addSeparator();
         menu.addAction(this->ui->actionafficher_les_logs_kit);
@@ -853,6 +865,19 @@ void MainWindow::on_GESKIT_pushButton_getkit_clicked()
         for(const auto& kit_elem : this->kitListGeskit_view)
         {
             if (kit_elem->getEn_panne() == true)
+            {
+                filtered_kits.push_back(kit_elem);
+            }
+        }
+        this->kitListGeskit_view = filtered_kits;
+    }
+
+    if (this->GESKIT_only_show_out_kits == true)
+    {
+        std::vector<Kit*> filtered_kits;
+        for(const auto& kit_elem : this->kitListGeskit_view)
+        {
+            if (kit_elem->getIs_out() == true)
             {
                 filtered_kits.push_back(kit_elem);
             }
