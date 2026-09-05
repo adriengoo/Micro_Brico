@@ -42,6 +42,7 @@ MainWindow::MainWindow(QWidget *parent)
     this->GESKIT_only_show_out_kits = false;
     this->GESKIT_only_show_broken_kits = false;
     this->sortie_resaForcedByAdmin = false;
+    this->sortie_popup_from_immediate = false;
     this->sortie_lastSelectedResaNb = -1;
     this->utinfoCompleterShowPending = false;
     SORTIE_refresh_resa_password_validation_state();
@@ -1761,10 +1762,8 @@ void MainWindow::on_RESA_pushButton_reserver_customContextMenuRequested(const QP
 
 void MainWindow::RESA_sortir_panier_immediatement()
 {
-    int sortie_nb = 0;
     Utilisateur l_user;
     bool has_errors = false;
-    QDate start_date = QDate::currentDate();
 
     if (this->kitListBasket_view.empty())
     {
@@ -1780,6 +1779,8 @@ void MainWindow::RESA_sortir_panier_immediatement()
     }
 
     g_connect_db.set_kit_out_status(&this->kitListBasket_view);
+    this->sortie_popup_user = l_user;
+    this->sortie_immediate_kits.clear();
     for(const auto& kit_elem : this->kitListBasket_view)
     {
         if (kit_elem->getIs_out())
@@ -1790,39 +1791,10 @@ void MainWindow::RESA_sortir_panier_immediatement()
             continue;
         }
 
-        std::vector<Item *> items_to_take_out;
-        g_connect_db.select_items_by_kit(kit_elem);
-        for(const auto& item_elem : kit_elem->item_list)
-        {
-            Item *p_item = new Item(item_elem->getId(),
-                                    item_elem->getName(),
-                                    item_elem->getForkey(),
-                                    item_elem->getQuantity_init(),
-                                    item_elem->getQuantity_current(),
-                                    item_elem->getQuantity_current());
-            items_to_take_out.push_back(p_item);
-        }
-        QString log_str = g_connect_db.update_items_quantity_of_kit(kit_elem, items_to_take_out);
-
-        g_connect_db.start_sortie();
-        sortie_nb = g_connect_db.guess_next_sortie_nb();
-        g_connect_db.add_sortie_from_kit(kit_elem, l_user.getId(), start_date, sortie_nb);
-        g_connect_db.insert_log_by_user_and_kit(kit_elem,&l_user,"L'utilisateur '"+l_user.getUtinfo()+"' a sorti immediatement le kit '"+kit_elem->getNom()+"' (code: "+kit_elem->getCode()+", numero de sortie: "+QString::number(sortie_nb)+") depuis le panier de reservation.");
-        g_connect_db.insert_log_by_user_and_kit(kit_elem,&l_user,"-----> Sortie immediate effectuee par l'administrateur '"+this->login_user.getUtinfo()+"' sans verification des quantites d'items.");
-        g_connect_db.insert_log_by_user_and_kit(kit_elem,&l_user,log_str);
-        g_connect_db.end_sortie();
-
-        kit_elem->setIs_in_basket(false);
-        kit_elem->setIs_out(true);
-        g_utils.clearList(&items_to_take_out);
+        this->sortie_immediate_kits.push_back(kit_elem);
     }
 
-    GEN_raise_popup_info("La sortie immediate du panier est bien prise en compte.");
-    this->ui->RESA_listWidget_panierResa->clear();
-    this->kitListBasket_view.clear();
-    this->GESKIT_refresh_kit_list_from_server(&this->kitList);
-    this->on_RESA_pushButton_getkit_resa_clicked();
-    this->on_RESA_pushButton_resa_showResa_clicked();
+    SORTIE_open_next_immediate_popup();
 }
 
 void MainWindow::on_RESA_pushButton_resa_showResa_clicked()
@@ -2244,7 +2216,6 @@ Kit* MainWindow::SORTIE_get_kitOfResa_selected()
     QList<QListWidgetItem*> items = this->ui->SORTIE_listWidget_resa_kitsOfResa->selectedItems();
     int row = this->ui->SORTIE_listWidget_resa_kitsOfResa->row(items.first());
     Kit* p_kit = kitListSortie_kitsOfResaView.at(row);
-    g_connect_db.select_items_by_kit (p_kit); // get every items of this kit
     return p_kit;
 }
 
@@ -2261,7 +2232,6 @@ Kit* MainWindow::SORTIE_get_kitOut_selected()
     int row = this->ui->SORTIE_listWidget_kitsOut->row(items.first());
     Sortie* p_sortie = sortieList_byUser.at(row);
     Kit * p_kit = GESKIT_find_kit_by_id(p_sortie->getId_kit());
-    g_connect_db.select_items_by_kit (p_kit); // get every items of this kit
     return p_kit;
 }
 
@@ -2284,6 +2254,61 @@ void MainWindow::SORTIE_refresh_current_resa_list_table(void)
         }
     }
 }
+
+///
+/// \brief MainWindow::SORTIE_throw_popup_sortie
+/// Ouvre la fenêtre de vérification après avoir chargé les items du kit.
+///
+void MainWindow::SORTIE_throw_popup_sortie(Kit *i_kit, Utilisateur *i_user, bool i_from_immediate)
+{
+    // Loading items belongs to opening a verification popup, not to a
+    // particular list widget.  This makes the popup usable from both tabs.
+    g_connect_db.select_items_by_kit(i_kit);
+
+    this->sortie_popup_from_immediate = i_from_immediate;
+    this->p_popupSortirResa = new (PopupSortirResa);
+    this->p_popupSortirResa->setMode(E_MODE_SORTIE);
+    this->p_popupSortirResa->setUser(i_user);
+    this->p_popupSortirResa->setP_kit(i_kit);
+    this->p_popupSortirResa->refresh_source_item_list();
+    this->p_popupSortirResa->setWindowTitle(i_kit->getNom());
+    this->p_popupSortirResa->setButtonText("Sortir");
+    this->p_popupSortirResa->show();
+    QObject::connect(this->p_popupSortirResa->getSortirButton(), &QPushButton::clicked, this, &MainWindow::on_SORTIE_popupSortirResaPushSortir);
+    QObject::connect(this->p_popupSortirResa->getAnnulerButton(), &QPushButton::clicked, this, &MainWindow::on_SORTIE_popupSortirResaPushAnnuler);
+    QObject::connect(this->p_popupSortirResa, &PopupSortirResa::delete_popup, this, &MainWindow::on_SORTIE_popupSortirResaPushAnnuler);
+}
+
+///
+/// \brief MainWindow::SORTIE_open_next_immediate_popup
+/// Présente les kits d'une sortie immédiate séquentiellement.
+///
+void MainWindow::SORTIE_open_next_immediate_popup()
+{
+    if (this->sortie_immediate_kits.empty())
+    {
+        SORTIE_finish_immediate_checkout();
+        return;
+    }
+
+    SORTIE_throw_popup_sortie(this->sortie_immediate_kits.front(), &this->sortie_popup_user, true);
+}
+
+///
+/// \brief MainWindow::SORTIE_finish_immediate_checkout
+/// Finalise l'interface une fois tous les kits du panier sortis.
+///
+void MainWindow::SORTIE_finish_immediate_checkout()
+{
+    this->ui->RESA_listWidget_panierResa->clear();
+    this->kitListBasket_view.clear();
+    this->GESKIT_refresh_kit_list_from_server(&this->kitList);
+    this->on_RESA_pushButton_getkit_resa_clicked();
+    this->on_RESA_pushButton_resa_showResa_clicked();
+    this->sortie_popup_from_immediate = false;
+    GEN_raise_popup_info("La sortie immédiate du panier est bien prise en compte.");
+}
+
 
 void MainWindow::on_SORTIE_listWidget_resa_kitsOfResa_itemClicked(QListWidgetItem *item)
 {
@@ -2353,6 +2378,8 @@ void MainWindow::on_SORTIE_pushButton_validate_mdp_sortie_clicked()
     GEN_raise_popup_info("Le mot de passe est validé");
 }
 
+
+
 ///
 /// \brief MainWindow::on_SORTIE_pushButton_sortir_clicked: Function called when "Sortir" Button is called inside main window
 ///
@@ -2365,17 +2392,7 @@ void MainWindow::on_SORTIE_pushButton_sortir_clicked()
     }
 
     Kit * l_kit = SORTIE_get_kitOfResa_selected();
-    this->p_popupSortirResa = new (PopupSortirResa);
-    this->p_popupSortirResa->setMode(E_MODE_SORTIE);
-    this->p_popupSortirResa->setUser(&this->sortie_user);
-    this->p_popupSortirResa->setP_kit(l_kit);
-    this->p_popupSortirResa->refresh_source_item_list();
-    this->p_popupSortirResa->setWindowTitle(l_kit->getNom());
-    this->p_popupSortirResa->setButtonText("Sortir");
-    this->p_popupSortirResa->show();
-    QObject::connect(this->p_popupSortirResa->getSortirButton(), &QPushButton::clicked, this, &MainWindow::on_SORTIE_popupSortirResaPushSortir);
-    QObject::connect(this->p_popupSortirResa->getAnnulerButton(), &QPushButton::clicked, this, &MainWindow::on_SORTIE_popupSortirResaPushAnnuler);
-    QObject::connect(this->p_popupSortirResa, &PopupSortirResa::delete_popup, this, &MainWindow::on_SORTIE_popupSortirResaPushAnnuler);
+    SORTIE_throw_popup_sortie(l_kit, &this->sortie_user);
 }
 
 
@@ -2390,8 +2407,22 @@ void MainWindow::on_SORTIE_popupSortirResaPushSortir()
     QString optional_text = "";
     if (this->p_popupSortirResa->checkIfOk(&forced_by_admin_from_popup, &optional_text) == true)
     {
-        SORTIE_sortir_kit(&forced_by_admin, &optional_text);
+        Utilisateur *popup_user = this->p_popupSortirResa->getUser();
+        SORTIE_sortir_kit(popup_user, &forced_by_admin, &optional_text);
         delete(this->p_popupSortirResa);
+        this->p_popupSortirResa = nullptr;
+
+        if (this->sortie_popup_from_immediate)
+        {
+            Kit *processed_kit = this->sortie_immediate_kits.front();
+            processed_kit->setIs_in_basket(false);
+            this->sortie_immediate_kits.erase(this->sortie_immediate_kits.begin());
+            this->kitListBasket_view.erase(std::remove(this->kitListBasket_view.begin(), this->kitListBasket_view.end(), processed_kit), this->kitListBasket_view.end());
+            RESA_refresh_kit_list_table();
+            RESA_refresh_basket_kit_list_table();
+            SORTIE_open_next_immediate_popup();
+            return;
+        }
 
 
         // Updates sortie list
@@ -2409,15 +2440,12 @@ void MainWindow::on_SORTIE_popupSortirResaPushSortir()
     }
 }
 
-void MainWindow::SORTIE_sortir_kit(bool * i_forced_by_admin, QString *i_optional_text)
+void MainWindow::SORTIE_sortir_kit(Utilisateur *i_user, bool * i_forced_by_admin, QString *i_optional_text)
 {
     int sortie_nb = 0;
-    Utilisateur l_user;
-    bool has_errors = false;
     QDate start_date;
     Kit * p_kit = this->p_popupSortirResa->getP_kit();
-    has_errors = g_connect_db.get_user_by_utinfo(this->ui->SORTIE_lineEdit_utinfo->text(), &l_user);
-    if (has_errors != true)
+    if (i_user != nullptr)
     {
         start_date = QDate::currentDate();
 
@@ -2426,17 +2454,18 @@ void MainWindow::SORTIE_sortir_kit(bool * i_forced_by_admin, QString *i_optional
         // Start of LOCK
         g_connect_db.start_sortie();
         sortie_nb = g_connect_db.guess_next_sortie_nb();
-        g_connect_db.add_sortie_from_kit(p_kit, l_user.getId(), start_date, sortie_nb);
-        g_connect_db.insert_log_by_user_and_kit(p_kit,&l_user,"L'utilisateur '"+l_user.getUtinfo()+"' a sorti le kit '"+p_kit->getNom()+"' (code: "+p_kit->getCode()+", n° de sortie: "+QString::number(sortie_nb)+")");
+        g_connect_db.add_sortie_from_kit(p_kit, i_user->getId(), start_date, sortie_nb);
+        QString sortie_type = this->sortie_popup_from_immediate ? " immédiatement depuis le panier" : "";
+        g_connect_db.insert_log_by_user_and_kit(p_kit, i_user, "L'utilisateur '"+i_user->getUtinfo()+"' a sorti"+sortie_type+" le kit '"+p_kit->getNom()+"' (code: "+p_kit->getCode()+", n° de sortie: "+QString::number(sortie_nb)+")");
         if (*i_forced_by_admin)
         {
-            g_connect_db.insert_log_by_user_and_kit(p_kit,&l_user,"-----> La sortie du kit a été signée par l'administrateur '"+this->login_user.getUtinfo()+"' (en l'absence de "+l_user.getUtinfo()+").");
+            g_connect_db.insert_log_by_user_and_kit(p_kit, i_user,"-----> La sortie du kit a été signée par l'administrateur '"+this->login_user.getUtinfo()+"' (en l'absence de "+i_user->getUtinfo()+").");
         }
         if (i_optional_text->isEmpty() !=  true) // if an optionnal string has been set by user
         {
-            g_connect_db.insert_log_by_user_and_kit(p_kit,&l_user,"-----> Message optionnel lié à la sortie: " + *i_optional_text);
+            g_connect_db.insert_log_by_user_and_kit(p_kit, i_user,"-----> Message optionnel lié à la sortie: " + *i_optional_text);
         }
-        g_connect_db.insert_log_by_user_and_kit(p_kit,&l_user,log_str);
+        g_connect_db.insert_log_by_user_and_kit(p_kit, i_user,log_str);
         // End of LOCK
         g_connect_db.end_sortie();
 
@@ -2583,7 +2612,17 @@ void MainWindow::SORTIE_calculate_remaining_quantity(std::vector<Item *> i_items
 ///
 void MainWindow::on_SORTIE_popupSortirResaPushAnnuler()
 {
+    bool was_immediate_checkout = this->sortie_popup_from_immediate;
     delete this->p_popupSortirResa;
+    this->p_popupSortirResa = nullptr;
+
+    if (was_immediate_checkout)
+    {
+        this->sortie_immediate_kits.clear();
+        this->sortie_popup_from_immediate = false;
+        RESA_refresh_kit_list_table();
+        RESA_refresh_basket_kit_list_table();
+    }
 }
 
 

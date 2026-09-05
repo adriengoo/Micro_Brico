@@ -136,6 +136,11 @@ private:
     QListWidgetItem * item_lastSelectedResa;//Variable remembering the last selected resa (only for "SORTIE" view)
     bool sortie_resaPasswordValidated;
     bool sortie_resaForcedByAdmin;
+    // Context kept while the item-verification popups are displayed for an
+    // immediate checkout.  The popups are intentionally shown one at a time.
+    bool sortie_popup_from_immediate;
+    Utilisateur sortie_popup_user;
+    std::vector<Kit*> sortie_immediate_kits;
     int sortie_lastSelectedResaNb;
     bool utinfoCompleterShowPending;
     QLabel * p_status_bar_label;
@@ -205,13 +210,16 @@ private:
     //-----------Sorties-------------------
     Kit *SORTIE_get_kitOfResa_selected();
     Kit *SORTIE_get_kitOut_selected();
-    void SORTIE_sortir_kit(bool * i_forced_by_admin, QString *i_optional_text);
+    void SORTIE_sortir_kit(Utilisateur *i_user, bool *i_forced_by_admin, QString *i_optional_text);
     void SORTIE_refresh_current_resa_list_table();
     void SORTIE_refresh_kits_of_resa_table(int i_resa_nb);
     void SORTIE_refresh_kitsOut_table();
     void SORTIE_restit_kit(bool * i_forced_by_admin, QString *i_optional_text);
     void SORTIE_calculate_remaining_quantity(std::vector<Item *> i_items_returned, std::vector<Item *> i_items_kit );
     void SORTIE_refresh_resa_password_validation_state();
+    void SORTIE_throw_popup_sortie(Kit *i_kit, Utilisateur *i_user, bool i_from_immediate = false);
+    void SORTIE_open_next_immediate_popup();
+    void SORTIE_finish_immediate_checkout();
 
 };
 #endif // MAINWINDOW_H

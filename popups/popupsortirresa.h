@@ -27,6 +27,7 @@ public:
     bool checkIfOk (bool *o_forced_by_admin, QString *o_optional_text);
     Kit *getP_kit() const;
     void setP_kit(Kit *newP_kit);
+    Utilisateur *getUser() const;
     void refresh_source_item_list();
     void refresh_dest_item_list();
     void clean_kit();

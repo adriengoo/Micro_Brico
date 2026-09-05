@@ -116,6 +116,15 @@ void PopupSortirResa::setP_kit(Kit *newP_kit)
     p_kit = newP_kit;
 }
 
+///
+/// \brief PopupSortirResa::getUser
+/// Retourne l'utilisateur associé à la sortie affichée par la fenêtre.
+///
+Utilisateur *PopupSortirResa::getUser() const
+{
+    return user;
+}
+
 void PopupSortirResa::clean_kit(void)
 {
     for (const auto& elem_item : p_kit->item_list)
@@ -236,6 +245,11 @@ void PopupSortirResa::push_item_to_dest_list(int new_quantity)
 
 void PopupSortirResa::refresh_source_item_list(void)
 {
+    if (p_kit == nullptr)
+    {
+        return;
+    }
+
     QString text_item = "";
     QBrush brush_verified;
     // Define brush to display kit booked in kit reservation list
@@ -266,9 +280,13 @@ void PopupSortirResa::refresh_source_item_list(void)
             // do nothing
         }
     }
-    // increment selected line in widget
-    select_next_item_on_QlistWidget(this->ui->listWidget_popupSortie_ItemSource, row);
-    set_spin_box_qty_from_selected_item();
+    // There is no item to select for an empty kit.  In particular, avoid a
+    // modulo-by-zero in select_next_item_on_QlistWidget().
+    if (this->ui->listWidget_popupSortie_ItemSource->count() > 0)
+    {
+        select_next_item_on_QlistWidget(this->ui->listWidget_popupSortie_ItemSource, row);
+        set_spin_box_qty_from_selected_item();
+    }
     refresh_verification_indicator();
 }
 
