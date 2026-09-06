@@ -136,6 +136,7 @@ private:
     QListWidgetItem * item_lastSelectedResa;//Variable remembering the last selected resa (only for "SORTIE" view)
     bool sortie_resaPasswordValidated;
     bool sortie_resaForcedByAdmin;
+    bool sortie_userAdhesionValidated; // Adhésion payée ou emprunteur administrateur.
     // Context kept while the item-verification popups are displayed for an
     // immediate checkout.  The popups are intentionally shown one at a time.
     bool sortie_popup_from_immediate;

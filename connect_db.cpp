@@ -363,7 +363,7 @@ bool Connect_db::get_user_by_mail(QString i_mail, Utilisateur * o_user)
     QSqlQuery query  = QSqlQuery(this->db);
 
     bool querry_had_errors = false;
-    runQuery(query, "SELECT id, nom, mdp, prenom, utinfo, token, telephone, date_caution, adhesion_payed, caution from utilisateur where email='"+i_mail+"'");
+    runQuery(query, "SELECT id, nom, mdp, prenom, utinfo, token, telephone, privilege, date_caution, adhesion_payed, caution from utilisateur where email='"+i_mail+"'");
     if (query.size() == 0)
     {
         querry_had_errors = true;
@@ -379,6 +379,7 @@ bool Connect_db::get_user_by_mail(QString i_mail, Utilisateur * o_user)
         o_user->setToken(query.value("token").toString());
         o_user->setId(query.value("id").toInt());
         o_user->setEmail(i_mail);
+        o_user->setPrivilege(query.value("privilege").toString() == "admin" ? E_admin : E_basic);
         o_user->setTelephone(query.value("telephone").toString());
         o_user->setDate_caution(query.value("date_caution").toDate());
         o_user->setAdhesion_payed(query.value("adhesion_payed").toBool());
@@ -398,7 +399,7 @@ bool Connect_db::get_user_by_utinfo(QString i_utinfo, Utilisateur * o_user)
     QSqlQuery query  = QSqlQuery(this->db);
 
     bool querry_had_errors = false;
-    runQuery(query, "SELECT id, nom, mdp, prenom, email, token,telephone, date_caution, adhesion_payed, caution from utilisateur where utinfo='"+i_utinfo+"'");
+    runQuery(query, "SELECT id, nom, mdp, prenom, email, token, telephone, privilege, date_caution, adhesion_payed, caution from utilisateur where utinfo='"+i_utinfo+"'");
     if (query.size() == 0)
     {
         querry_had_errors = true;
@@ -414,6 +415,7 @@ bool Connect_db::get_user_by_utinfo(QString i_utinfo, Utilisateur * o_user)
         o_user->setToken(query.value("token").toString());
         o_user->setId(query.value("id").toInt());
         o_user->setUtinfo(i_utinfo);
+        o_user->setPrivilege(query.value("privilege").toString() == "admin" ? E_admin : E_basic);
         o_user->setTelephone(query.value("telephone").toString());
         o_user->setDate_caution(query.value("date_caution").toDate());
         o_user->setAdhesion_payed(query.value("adhesion_payed").toBool());
@@ -427,7 +429,7 @@ bool Connect_db::get_user_by_id(int id, Utilisateur *o_user)
     QSqlQuery query  = QSqlQuery(this->db);
 
     bool querry_had_errors = false;
-    runQuery(query, "SELECT utinfo, nom, mdp, prenom, email, token,telephone, date_caution, adhesion_payed, caution  from utilisateur where id="+QString::number(id)+"");
+    runQuery(query, "SELECT utinfo, nom, mdp, prenom, email, token, telephone, privilege, date_caution, adhesion_payed, caution from utilisateur where id="+QString::number(id)+"");
     if (query.size() == 0)
     {
         querry_had_errors = true;
@@ -449,6 +451,7 @@ bool Connect_db::get_user_by_id(int id, Utilisateur *o_user)
         o_user->setAdhesion_payed(query.value("adhesion_payed").toBool());
         o_user->setCaution(query.value("caution").toString());
         o_user->setId(id);
+        o_user->setPrivilege(query.value("privilege").toString() == "admin" ? E_admin : E_basic);
     }
     return querry_had_errors;
 

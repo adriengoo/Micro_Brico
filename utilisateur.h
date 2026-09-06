@@ -57,10 +57,10 @@ private:
     QString telephone;
 
     QDate date_caution;
-    bool adhesion_payed;
+    bool adhesion_payed = false;
     Money caution;
 
-    T_user_privilege privilege;
+    T_user_privilege privilege = E_basic;
     bool is_logged_on;
 };
 

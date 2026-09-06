@@ -39,6 +39,7 @@ MainWindow::MainWindow(QWidget *parent)
     this->ui->splitter_main_logs->setStretchFactor(1, 0);
     this->ui->splitter_main_logs->setSizes({650, 140});
     this->sortie_resaPasswordValidated = false;
+    this->sortie_userAdhesionValidated = false;
     this->GESKIT_only_show_out_kits = false;
     this->GESKIT_only_show_broken_kits = false;
     this->sortie_resaForcedByAdmin = false;
@@ -1983,6 +1984,7 @@ void MainWindow::on_SORTIE_pushButton_resa_showResa_clicked()
     bool has_errors = false;
     this->sortie_resaPasswordValidated = false;
     this->sortie_resaForcedByAdmin = false;
+    this->sortie_userAdhesionValidated = false;
     this->sortie_lastSelectedResaNb = -1;
 
     //Delete every kits in "KitsOfResa" view
@@ -2005,6 +2007,8 @@ void MainWindow::on_SORTIE_pushButton_resa_showResa_clicked()
         has_errors = g_connect_db.get_user_by_utinfo(this->ui->SORTIE_lineEdit_utinfo->text(), &this->sortie_user);
         if (has_errors == false)
         {
+            this->sortie_userAdhesionValidated = (this->sortie_user.getPrivilege() == E_admin)
+                                               || this->sortie_user.getAdhesion_payed();
             this->statusBar()->showMessage("GESTION SORTIE: Sortie/Retour pour l'utilisateur: "+this->ui->SORTIE_lineEdit_utinfo->text());
 
             // Updates resa list
@@ -2034,6 +2038,7 @@ void MainWindow::on_SORTIE_pushButton_resa_showResa_clicked()
         this->statusBar()->showMessage("GESTION SORTIE: Sortie/Retour pour tous les utilisateurs");
     }
 
+    SORTIE_refresh_resa_password_validation_state();
 }
 
 void MainWindow::on_SORTIE_listWidget_resa_currentResa_itemClicked(QListWidgetItem *item)
@@ -2136,6 +2141,12 @@ void MainWindow::SORTIE_refresh_kits_of_resa_table(int i_resa_nb)
 
 void MainWindow::SORTIE_refresh_resa_password_validation_state()
 {
+    // Une adhésion non réglée bloque la sortie même si le mot de passe est valide.
+    if (!this->sortie_resaPasswordValidated || !this->sortie_userAdhesionValidated)
+    {
+        this->ui->SORTIE_pushButton_sortir->setEnabled(false);
+    }
+
     bool resa_selected = (this->sortie_lastSelectedResaNb != -1) && (this->kitListSortie_kitsOfResaView.empty() == false);
     bool kit_out_selected = this->ui->SORTIE_listWidget_kitsOut->selectedItems().empty() == false;
     
@@ -2164,7 +2175,12 @@ void MainWindow::SORTIE_refresh_resa_password_validation_state()
         this->ui->SORTIE_label_resa_password->setText("Mot de passe utilisateur:");
     }
 
-    if (this->sortie_resaPasswordValidated)
+    if (user_selected && this->sortie_userAdhesionValidated == false)
+    {
+        this->ui->SORTIE_label_resa_password_status->setText("Adhésion non réglée. Impossible de sortir les kits.");
+        this->ui->SORTIE_label_resa_password_status->setStyleSheet("QLabel { color : red; font-weight: bold; }");
+    }
+    else if (this->sortie_resaPasswordValidated)
     {
         this->ui->SORTIE_label_resa_password_status->setText("Mot de passe valide. Vous pouvez sortir ou restituer les kits.");
         this->ui->SORTIE_label_resa_password_status->setStyleSheet("QLabel { color : green; font-weight: bold; }");
@@ -2270,7 +2286,7 @@ void MainWindow::SORTIE_load_kit_items_for_popup(Kit *i_kit)
 ///
 void MainWindow::SORTIE_throw_popup_sortie(Kit *i_kit, Utilisateur *i_user, bool i_from_immediate)
 {
-    SORTIE_load_kit_items_for_popup(i_kit);
+        SORTIE_load_kit_items_for_popup(i_kit);
 
     this->sortie_popup_from_immediate = i_from_immediate;
     this->p_popupSortirResa = new (PopupSortirResa);
@@ -2331,7 +2347,7 @@ void MainWindow::on_SORTIE_listWidget_resa_kitsOfResa_itemClicked(QListWidgetIte
     }
     else
     {
-        this->ui->SORTIE_pushButton_sortir->setEnabled(this->sortie_resaPasswordValidated);
+        this->ui->SORTIE_pushButton_sortir->setEnabled(this->sortie_resaPasswordValidated && this->sortie_userAdhesionValidated);
         this->ui->SORTIE_pushButton_retirer_kit_from_resa->setEnabled(true);
     }
 }
@@ -2392,6 +2408,12 @@ void MainWindow::on_SORTIE_pushButton_validate_mdp_sortie_clicked()
 ///
 void MainWindow::on_SORTIE_pushButton_sortir_clicked()
 {
+    if (this->sortie_userAdhesionValidated == false)
+    {
+        SORTIE_refresh_resa_password_validation_state();
+        return;
+    }
+
     if (this->sortie_resaPasswordValidated == false)
     {
         GEN_raise_popup_warning("Veuillez valider le mot de passe de la reservation avant de sortir un kit.");
