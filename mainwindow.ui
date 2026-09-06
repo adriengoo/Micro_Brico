@@ -611,119 +611,136 @@
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout">
             <item>
-             <widget class="QGroupBox" name="SORTIE_groupBox_resa_password">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>250</height>
-               </size>
-              </property>
-              <property name="title">
-               <string>Qui sort ou restitue l'objet?</string>
-              </property>
-              <layout class="QVBoxLayout" name="SORTIE_verticalLayout_resa_password">
-               <item>
-                <widget class="QLineEdit" name="SORTIE_lineEdit_utinfo">
-                 <property name="focusPolicy">
-                  <enum>Qt::FocusPolicy::StrongFocus</enum>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
-                 <property name="dragEnabled">
-                  <bool>true</bool>
-                 </property>
-                 <property name="placeholderText">
-                  <string>Utinfo</string>
-                 </property>
-                 <property name="clearButtonEnabled">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="SORTIE_pushButton_resa_showResa">
-                 <property name="text">
-                  <string>Afficher Réservations</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLabel" name="SORTIE_label_resa_password_status">
-                 <property name="text">
-                  <string>Sortez tous les kits associes avant validation.</string>
-                 </property>
-                 <property name="wordWrap">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <layout class="QHBoxLayout" name="SORTIE_horizontalLayout_resa_password_user">
+             <layout class="QHBoxLayout" name="horizontalLayout_5">
+              <item>
+               <widget class="QGroupBox" name="SORTIE_groupBox_resa_password">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>250</height>
+                 </size>
+                </property>
+                <property name="title">
+                 <string>Qui sort ou restitue l'objet?</string>
+                </property>
+                <layout class="QVBoxLayout" name="SORTIE_verticalLayout_resa_password">
                  <item>
-                  <widget class="QLabel" name="SORTIE_label_resa_password_user_title">
+                  <widget class="QLineEdit" name="SORTIE_lineEdit_utinfo">
+                   <property name="focusPolicy">
+                    <enum>Qt::FocusPolicy::StrongFocus</enum>
+                   </property>
                    <property name="text">
-                    <string>Utilisateur:</string>
+                    <string/>
+                   </property>
+                   <property name="dragEnabled">
+                    <bool>true</bool>
+                   </property>
+                   <property name="placeholderText">
+                    <string>Utinfo</string>
+                   </property>
+                   <property name="clearButtonEnabled">
+                    <bool>true</bool>
                    </property>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLabel" name="SORTIE_label_resa_password_user">
+                  <widget class="QPushButton" name="SORTIE_pushButton_resa_showResa">
                    <property name="text">
-                    <string>????</string>
+                    <string>Afficher Réservations</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="SORTIE_label_resa_password_status">
+                   <property name="text">
+                    <string>Sortez tous les kits associes avant validation.</string>
+                   </property>
+                   <property name="wordWrap">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="SORTIE_horizontalLayout_resa_password_user">
+                   <item>
+                    <widget class="QLabel" name="SORTIE_label_resa_password_user_title">
+                     <property name="text">
+                      <string>Utilisateur:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="SORTIE_label_resa_password_user">
+                     <property name="text">
+                      <string>????</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="SORTIE_horizontalLayout_resa_password">
+                   <item>
+                    <widget class="QLabel" name="SORTIE_label_resa_password">
+                     <property name="text">
+                      <string>Mot de passe utilisateur:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLineEdit" name="SORTIE_lineEdit_resa_mdp">
+                     <property name="minimumSize">
+                      <size>
+                       <width>150</width>
+                       <height>0</height>
+                      </size>
+                     </property>
+                     <property name="inputMethodHints">
+                      <set>Qt::InputMethodHint::ImhHiddenText|Qt::InputMethodHint::ImhNoAutoUppercase|Qt::InputMethodHint::ImhNoPredictiveText|Qt::InputMethodHint::ImhSensitiveData</set>
+                     </property>
+                     <property name="echoMode">
+                      <enum>QLineEdit::EchoMode::Password</enum>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <widget class="QCheckBox" name="SORTIE_checkBox_resa_mdpadmin">
+                   <property name="text">
+                    <string>Cocher pour signer avec le mdp admin</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="SORTIE_pushButton_validate_mdp_sortie">
+                   <property name="font">
+                    <font>
+                     <bold>true</bold>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>Valider Mot de Passe</string>
                    </property>
                   </widget>
                  </item>
                 </layout>
-               </item>
-               <item>
-                <layout class="QHBoxLayout" name="SORTIE_horizontalLayout_resa_password">
-                 <item>
-                  <widget class="QLabel" name="SORTIE_label_resa_password">
-                   <property name="text">
-                    <string>Mot de passe utilisateur:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLineEdit" name="SORTIE_lineEdit_resa_mdp">
-                   <property name="minimumSize">
-                    <size>
-                     <width>150</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="inputMethodHints">
-                    <set>Qt::InputMethodHint::ImhHiddenText|Qt::InputMethodHint::ImhNoAutoUppercase|Qt::InputMethodHint::ImhNoPredictiveText|Qt::InputMethodHint::ImhSensitiveData</set>
-                   </property>
-                   <property name="echoMode">
-                    <enum>QLineEdit::EchoMode::Password</enum>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-               <item>
-                <widget class="QCheckBox" name="SORTIE_checkBox_resa_mdpadmin">
-                 <property name="text">
-                  <string>Cocher pour signer avec le mdp admin</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="SORTIE_pushButton_validate_mdp_sortie">
-                 <property name="font">
-                  <font>
-                   <bold>true</bold>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>Valider Mot de Passe</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </widget>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_5">
+                <property name="orientation">
+                 <enum>Qt::Orientation::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
             </item>
             <item>
              <widget class="QTabWidget" name="tabWidget">

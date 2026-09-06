@@ -78,3 +78,4 @@ installer/setqtenv.bat
 installer/packages/com.vendor.root/data/microBricoArch.zip
 installer/packages/com.vendor.root/meta/license.txt
 installer/micro_brico_installer_1.0.1.exe.MKPoII
+.qtcreator/*

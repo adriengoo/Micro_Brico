@@ -32,13 +32,13 @@ echo La version a été mise à jour avec succès.
 
 
 del %DATA_DIR%\micro_brico_app.exe
-copy  .\..\build\Desktop_Qt_6_7_3_MinGW_64_bit-Release\micro_brico_app.exe %DATA_DIR%\tmp\micro_brico_app.exe
+copy  .\..\build\Desktop_Qt_6_11_2_MinGW_64_bit_Release\micro_brico_app.exe %DATA_DIR%\tmp\micro_brico_app.exe
 
 call windeployqt %DATA_DIR%\tmp\micro_brico_app.exe
-copy .\qsqlmysql.dll_Qt_SQL_driver_6.7.3_MinGW_13.1_64-bit\libmysql.dll %DATA_DIR%\tmp\libmysql.dll
-copy .\qsqlmysql.dll_Qt_SQL_driver_6.7.3_MinGW_13.1_64-bit\libssl-3-x64.dll %DATA_DIR%\tmp\libssl-3-x64.dll
-copy .\qsqlmysql.dll_Qt_SQL_driver_6.7.3_MinGW_13.1_64-bit\libcrypto-3-x64.dll %DATA_DIR%\tmp\libcrypto-3-x64.dll
-xcopy /Y /s /F  .\qsqlmysql.dll_Qt_SQL_driver_6.7.3_MinGW_13.1_64-bit\sqldrivers\ %DATA_DIR%\tmp\sqldrivers\
+copy .\qsqlmysql.dll_Qt_SQL_driver_6.11.2_MinGW_64-bit\libmysql.dll %DATA_DIR%\tmp\libmysql.dll
+copy .\qsqlmysql.dll_Qt_SQL_driver_6.11.2_MinGW_64-bit\libssl-3-x64.dll %DATA_DIR%\tmp\libssl-3-x64.dll
+copy .\qsqlmysql.dll_Qt_SQL_driver_6.11.2_MinGW_64-bit\libcrypto-3-x64.dll %DATA_DIR%\tmp\libcrypto-3-x64.dll
+xcopy /Y /s /F  .\qsqlmysql.dll_Qt_SQL_driver_6.11.2_MinGW_64-bit\sqldrivers\ %DATA_DIR%\tmp\sqldrivers\
 
 REM del %DATA_DIR%\microBricoArch.zipq
 call archivegen %DATA_DIR%\microBricoArch.zip %DATA_DIR%\tmp\* -f zip
