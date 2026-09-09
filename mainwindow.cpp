@@ -17,10 +17,12 @@
 #include <QMenu>
 #include <QEvent>
 #include <QLineEdit>
+#include <QSqlError>
+#include "tests/automation/test_database_config.h"
 
 
 #define DAY_OF_RESA 5
-static QString VERSION = "1.1.0";
+static QString VERSION = "1.1.1";
 
 QPointer<LogBrowser> logBrowser;
 
@@ -72,22 +74,45 @@ MainWindow::MainWindow(QWidget *parent)
         this->on_SORTIE_pushButton_resa_showResa_clicked();
     });
 
-    QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL", "dbtest");
+    const TestDatabaseConfig testDatabaseConfig = TestDatabaseConfig::fromEnvironment();
+    if (testDatabaseConfig.requested && !testDatabaseConfig.valid) {
+        qFatal("Invalid CAMP-001 test database configuration: %s", qPrintable(testDatabaseConfig.error));
+    }
 
+    const bool useTestDatabase = testDatabaseConfig.requested;
+    const QString connectionName = useTestDatabase
+        ? QStringLiteral("microbrico_test_db4qtest")
+        : QStringLiteral("dbtest");
+    QSqlDatabase db = QSqlDatabase::addDatabase(
+        useTestDatabase ? testDatabaseConfig.driver : QStringLiteral("QMYSQL"),
+        connectionName);
+
+    if (useTestDatabase) {
+        db.setHostName(testDatabaseConfig.host);
+        db.setPort(testDatabaseConfig.port);
+        db.setDatabaseName(testDatabaseConfig.databaseName);
+        db.setUserName(testDatabaseConfig.user);
+        db.setPassword(testDatabaseConfig.password);
+        VERSION += "_CAMP001_TEST";
+    } else {
 #ifdef NDEBUG //Release compilation
-    db.setHostName("192.168.10.120");
-    db.setDatabaseName("db_pret_micro");
-    db.setUserName("admin");
-    db.setPassword("PAPYRUS");
+        db.setHostName("192.168.10.120");
+        db.setDatabaseName("db_pret_micro");
+        db.setUserName("admin");
+        db.setPassword("PAPYRUS");
 #else //Debug compilation
-    db.setHostName("localhost");
-    db.setDatabaseName("dbtest");
-    db.setUserName("adrien");
-    db.setPassword("adrien");
-    VERSION += "_DEBUG";
+        db.setHostName("localhost");
+        db.setDatabaseName("dbtest");
+        db.setUserName("adrien");
+        db.setPassword("adrien");
+        VERSION += "_DEBUG";
 #endif
-    db.open();
-    g_connect_db.set_db();
+    }
+    if (!db.open()) {
+        qFatal("Unable to open configured database connection '%s': %s",
+               qPrintable(connectionName), qPrintable(db.lastError().text()));
+    }
+    g_connect_db.set_db(connectionName);
 
     // Set active user in g_db_connect
     g_connect_db.setActiveUser(&(this->login_user));
@@ -168,9 +193,14 @@ MainWindow::MainWindow(QWidget *parent)
     this->p_loginConnect = new (Login_connect);
 #ifndef NDEBUG //DEBUG compilation
     // Connection automatique avec l'utilisateur "admin" à chaque démarrage
-    this->login_user.setUtinfo("admin");
-    this->login_user.setMdp("admin");
-    this-> on_popupLogin_ok();
+    // CAMP-001 must start without a session so TC-001 can exercise the login
+    // dialog.  The existing developer shortcut is preserved outside the
+    // explicit test-database opt-in.
+    if (!TestDatabaseConfig::fromEnvironment().requested) {
+        this->login_user.setUtinfo("admin");
+        this->login_user.setMdp("admin");
+        this-> on_popupLogin_ok();
+    }
 #endif
 
 

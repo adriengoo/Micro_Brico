@@ -1,0 +1,28 @@
+id: TC-042
+title: Sortie signée par administrateur pour un utilisateur absent
+priority: P0
+requirement: L5 - Signature administrateur et traçabilité
+preconditions:
+  - Application connectée sous TEST_ADMIN dont le mot de passe est connu.
+  - Base de test réinitialisée avec TEST_USER_042 et une réservation active pour le seul kit TEST-K-042.
+  - TEST-K-042 contient un item de quantité 1.
+test_data:
+  - "Utilisateur bénéficiaire : TEST_USER_042"
+  - "Signataire : TEST_ADMIN"
+steps:
+  - number: 1
+    action: Sélectionner TEST_USER_042 et TEST-K-042 dans l'onglet sorties, activer l'option de signature administrateur si elle est proposée.
+    expected: La validation attend le mot de passe de TEST_ADMIN.
+  - number: 2
+    action: Saisir le mot de passe valide de TEST_ADMIN, valider, puis confirmer la sortie avec la quantité proposée.
+    expected: La sortie est créée pour TEST_USER_042.
+  - number: 3
+    action: Contrôler la sortie et les logs liés au kit et à TEST_USER_042.
+    expected: La sortie active est rattachée à TEST_USER_042 et une trace indique la signature par TEST_ADMIN.
+pass_criteria:
+  - L'utilisateur bénéficiaire n'est pas remplacé par le signataire administrateur.
+  - La signature administrateur est traçable.
+automation:
+  candidate: true
+  target: QtTest
+notes: "Le droit d'un administrateur à signer pour autrui doit être validé avec le métier (RM-002)."

@@ -1,0 +1,26 @@
+id: TC-010
+title: Création puis recherche d'un utilisateur dédié
+priority: P1
+requirement: L2 - Gestion et recherche des utilisateurs
+preconditions:
+  - Application connectée sous TEST_ADMIN.
+  - Base de test réinitialisée ; l'utinfo TEST_U_010 est absent.
+test_data:
+  - "Utilisateur : TEST_U_010, nom Martin, prénom Test, courriel test-u-010@example.invalid"
+steps:
+  - number: 1
+    action: Ouvrir l'ajout d'utilisateur et renseigner toutes les données de test obligatoires, puis valider.
+    expected: Un message de succès ou une ligne nouvellement créée confirme l'ajout.
+  - number: 2
+    action: Rechercher l'utilisateur par utinfo TEST_U_010 puis par nom Martin.
+    expected: La recherche retourne l'utilisateur créé avec les valeurs saisies.
+  - number: 3
+    action: Contrôler la ligne utilisateur dans la base de test par son utinfo.
+    expected: Une seule ligne correspond et ses champs fonctionnels concordent avec les données saisies.
+pass_criteria:
+  - L'utilisateur créé est retrouvé par les deux recherches.
+  - Les données affichées et persistées concordent.
+automation:
+  candidate: true
+  target: QtTest
+notes: "Les champs réellement obligatoires et les droits de création sont à confirmer (RM-002)."

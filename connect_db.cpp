@@ -12,9 +12,9 @@ Connect_db::Connect_db()
 
 }
 
-void Connect_db::set_db(void)
+void Connect_db::set_db(const QString &connectionName)
 {
-    this->db = QSqlDatabase::database("dbtest");
+    this->db = QSqlDatabase::database(connectionName);
 }
 
 void Connect_db::select_logs_by_kit(std::vector<Log *> *o_log, Kit *i_kit, int i_max_lines)

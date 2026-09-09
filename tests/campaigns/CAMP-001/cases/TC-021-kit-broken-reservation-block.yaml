@@ -1,0 +1,27 @@
+id: TC-021
+title: Kit en panne non ajoutable au panier de réservation
+priority: P1
+requirement: L3/L4 - État en panne et sélection pour réservation
+preconditions:
+  - Application connectée sous TEST_ADMIN.
+  - Base de test réinitialisée avec le kit TEST-K-021 marqué en panne et non sorti.
+  - La date sélectionnée est une date future dédiée au test.
+test_data:
+  - "Kit : TEST-K-021, en panne"
+steps:
+  - number: 1
+    action: Aller dans les réservations, rechercher TEST-K-021 et sélectionner le kit.
+    expected: Le kit est signalé en panne dans la liste.
+  - number: 2
+    action: Tenter d'ajouter le kit au panier.
+    expected: Le kit n'est pas ajouté au panier et aucune réservation n'est créée.
+  - number: 3
+    action: Vérifier la table de réservation de la base de test pour TEST-K-021 et la date de test.
+    expected: Aucune ligne active de réservation n'existe pour ce kit et cette date.
+pass_criteria:
+  - Un kit en panne ne peut pas entrer dans le panier.
+  - L'absence d'ajout ne produit aucune donnée persistée.
+automation:
+  candidate: true
+  target: QtTest
+notes: "Le produit semble interdire ce cas ; la règle métier d'interdiction reste à confirmer (RM-003)."

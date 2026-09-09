@@ -42,7 +42,7 @@ public:
 
     void insert_log_by_user_and_kit(Kit * i_kit, Utilisateur *i_user, QString text);
 
-    void set_db(void);
+    void set_db(const QString &connectionName);
 
     //-----------User-------------------
     void select_all_users(std::vector<Utilisateur*> *list);

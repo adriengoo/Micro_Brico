@@ -1,0 +1,19 @@
+# Contrat minimal d'une fiche de test. Les futures fiches doivent respecter ces champs.
+id: TC-XXX
+title: Titre court et unique
+priority: P0 # P0 (bloquant), P1, P2 ou P3
+requirement: Fonction ou règle métier couverte
+preconditions:
+  - Application, données et droits nécessaires
+test_data:
+  - Donnée d'entrée pertinente
+steps:
+  - number: 1
+    action: Action reproductible pour l'opérateur ou l'automate
+    expected: Résultat observable et vérifiable
+pass_criteria:
+  - Condition nécessaire au statut PASS
+automation:
+  candidate: false
+  target: null # Exemple : QtTest ou pytest-qt
+notes: null

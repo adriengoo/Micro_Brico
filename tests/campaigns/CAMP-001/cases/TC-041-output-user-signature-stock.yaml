@@ -1,0 +1,32 @@
+id: TC-041
+title: Sortie signée par l'utilisateur avec mise à jour du stock
+priority: P0
+requirement: L5 - Sortie planifiée, quantités et traçabilité
+preconditions:
+  - Application connectée sous TEST_ADMIN.
+  - Base de test réinitialisée avec TEST_USER_041, son mot de passe connu, et une réservation active pour le seul kit TEST-K-041.
+  - TEST-K-041 contient TEST_ITEM_041 avec quantité 2.
+test_data:
+  - "Sortie de TEST-K-041 pour TEST_USER_041"
+  - "Quantité remise : 2 unités de TEST_ITEM_041"
+steps:
+  - number: 1
+    action: Sélectionner TEST_USER_041 et TEST-K-041 dans l'onglet sorties, saisir le mot de passe valide de TEST_USER_041 et le valider.
+    expected: Le statut confirme le mot de passe valide et autorise la sortie.
+  - number: 2
+    action: Déclencher la sortie, conserver la quantité proposée de 2 pour TEST_ITEM_041 dans la boîte de sortie, puis confirmer.
+    expected: La sortie est confirmée et TEST-K-041 apparaît comme sorti pour TEST_USER_041.
+  - number: 3
+    action: Contrôler la base de test.
+    expected: Une sortie active dédiée existe pour TEST-K-041 et TEST_USER_041 ; la quantité persistée de TEST_ITEM_041 est 0.
+  - number: 4
+    action: Consulter les logs utilisateur et kit.
+    expected: La sortie et l'évolution de quantité sont tracées, sans mention de signature forcée par administrateur.
+pass_criteria:
+  - La sortie active, l'utilisateur et le kit sont cohérents.
+  - Le stock passe de 2 à 0 exactement une fois.
+  - Les logs permettent d'identifier la sortie et la mise à jour du stock.
+automation:
+  candidate: true
+  target: QtTest
+notes: "L'éligibilité adhésion/caution et la règle exacte de signature utilisateur sont à confirmer (RM-001, RM-002)."

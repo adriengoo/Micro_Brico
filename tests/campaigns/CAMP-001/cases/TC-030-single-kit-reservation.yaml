@@ -1,0 +1,33 @@
+id: TC-030
+title: Création d'une réservation future pour un kit unique
+priority: P0
+requirement: L4 - Création et persistance d'une réservation
+preconditions:
+  - Application connectée sous TEST_ADMIN.
+  - Base de test réinitialisée avec TEST_USER_030 et TEST-K-030 disponibles, non en panne et non réservés pour la date de test.
+  - La date future TEST_DATE_030 est choisie et documentée.
+test_data:
+  - "Utilisateur : TEST_USER_030"
+  - "Kit unique : TEST-K-030"
+  - "Date : TEST_DATE_030, future"
+steps:
+  - number: 1
+    action: Sélectionner TEST_DATE_030, rechercher TEST-K-030 et l'ajouter au panier.
+    expected: Le panier contient exactement TEST-K-030.
+  - number: 2
+    action: Saisir ou sélectionner TEST_USER_030, puis créer la réservation.
+    expected: La création est confirmée sans message d'erreur.
+  - number: 3
+    action: Afficher les réservations de TEST_USER_030 et contrôler la ligne de réservation en base.
+    expected: Une réservation active relie TEST_USER_030, TEST-K-030 et TEST_DATE_030 ; aucun autre kit n'est associé.
+  - number: 4
+    action: Consulter les logs utilisateur et kit associés.
+    expected: La réservation est tracée avec un identifiant de réservation et les références du test.
+pass_criteria:
+  - La réservation active contient exactement l'utilisateur, le kit et la date demandés.
+  - Le kit apparaît réservé pour TEST_DATE_030.
+  - Une trace liée à l'utilisateur et au kit existe.
+automation:
+  candidate: true
+  target: QtTest
+notes: "Le scénario est volontairement limité à un kit : les réservations multi-kits sont hors périmètre initial. L'éligibilité de TEST_USER_030 reste à confirmer (RM-001)."

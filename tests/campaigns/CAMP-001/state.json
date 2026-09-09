@@ -1,0 +1,45 @@
+{
+  "id": "CAMP-001",
+  "name": "Campagne initiale MicroBrico",
+  "application": "micro_brico_app (Qt Widgets / MySQL)",
+  "status": "review_changes_required",
+  "current_stage": "test-cases-correction",
+  "approved_stages": ["strategy", "test-cases"],
+  "next_stage": "test-cases-correction",
+  "stage_policy": "Une étape ne commence qu'après validation explicite de l'étape précédente par le responsable de campagne.",
+  "workflow": [
+    "strategy",
+    "test-cases",
+    "review",
+    "technical-foundation",
+    "execution",
+    "report"
+  ],
+  "technical_foundation": {
+    "status": "integrated_tc001_validated_db4qtest_only",
+    "stage": "technical-foundation",
+    "assigned_agent_role": "technical test foundation",
+    "starts_after": "review",
+    "next_stage": "execution",
+    "scope": [
+      "Ajouter une cible Qt Test et son intégration CTest.",
+      "Rendre la connexion MySQL de test configurable sans cibler la base de développement.",
+      "Mettre en place la préparation et la remise à zéro de jeux de données minimaux dédiés aux tests.",
+      "Automatiser TC-001 comme preuve de fonctionnement du socle."
+    ],
+    "non_goals": [
+      "Automatiser les autres fiches avant validation du socle.",
+      "Se connecter à, lire ou écrire dans dbtest.",
+      "Modifier les règles métier non validées."
+    ]
+  },
+  "artifacts": {
+    "strategy": "tests/campaigns/CAMP-001/strategy.md",
+    "test_cases": "tests/campaigns/CAMP-001/cases/",
+    "business_rules": "tests/regles_metier.md",
+    "review": "tests/campaigns/CAMP-001/review.md",
+    "technical_foundation": "tests/campaigns/CAMP-001/technical-foundation.md",
+    "results": "tests/campaigns/CAMP-001/results/summary.json",
+    "report": "tests/campaigns/CAMP-001/report.md"
+  }
+}

@@ -1,0 +1,23 @@
+id: TC-011
+title: Refus d'un utinfo utilisateur dupliqué
+priority: P1
+requirement: L2 - Intégrité de l'identifiant utilisateur
+preconditions:
+  - Application connectée sous TEST_ADMIN.
+  - Base de test réinitialisée avec l'utilisateur TEST_U_011 existant.
+test_data:
+  - "Nouvelle saisie avec utinfo identique : TEST_U_011"
+steps:
+  - number: 1
+    action: Ouvrir l'ajout d'utilisateur et saisir un utilisateur dont l'utinfo est TEST_U_011.
+    expected: La saisie peut être complétée jusqu'à la validation.
+  - number: 2
+    action: Valider l'ajout puis relever le retour IHM et le contenu de la base de test.
+    expected: L'ajout est refusé de manière visible et aucune seconde ligne TEST_U_011 n'est créée.
+pass_criteria:
+  - La base ne contient qu'un utilisateur avec TEST_U_011.
+  - L'opérateur reçoit un retour exploitable sur l'échec.
+automation:
+  candidate: true
+  target: QtTest
+notes: null

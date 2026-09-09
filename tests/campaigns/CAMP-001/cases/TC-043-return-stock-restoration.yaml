@@ -1,0 +1,33 @@
+id: TC-043
+title: Restitution d'un kit sorti avec restauration du stock
+priority: P0
+requirement: L5 - Restitution, quantités et désactivation de sortie
+preconditions:
+  - Application connectée sous TEST_ADMIN.
+  - Base de test réinitialisée avec une sortie active dédiée de TEST-K-043 pour TEST_USER_043.
+  - TEST-K-043 contient TEST_ITEM_043 dont la quantité persistée est 0 après une sortie de 2 unités.
+  - Le mot de passe valable pour la restitution est disponible conformément au comportement actuel de l'application.
+test_data:
+  - "Sortie active dédiée : TEST-K-043 pour TEST_USER_043"
+  - "Item : TEST_ITEM_043 ; quantité à restituer 2"
+steps:
+  - number: 1
+    action: Sélectionner TEST_USER_043 puis TEST-K-043 parmi les sorties actives, valider le mot de passe requis.
+    expected: L'action de restitution devient disponible.
+  - number: 2
+    action: Déclencher la restitution, sélectionner une restitution de 2 unités de TEST_ITEM_043 et confirmer.
+    expected: TEST-K-043 ne figure plus parmi les sorties actives de TEST_USER_043.
+  - number: 3
+    action: Contrôler la base de test.
+    expected: La sortie dédiée est désactivée et la quantité de TEST_ITEM_043 est restaurée à 2.
+  - number: 4
+    action: Consulter les logs du kit et de TEST_USER_043.
+    expected: La restitution et l'évolution de quantité sont tracées.
+pass_criteria:
+  - La sortie active est désactivée après restitution.
+  - La quantité finale est exactement 2.
+  - Les traces de restitution existent.
+automation:
+  candidate: true
+  target: QtTest
+notes: "Les règles d'éligibilité et de signature lors d'une restitution restent à confirmer (RM-001, RM-002)."

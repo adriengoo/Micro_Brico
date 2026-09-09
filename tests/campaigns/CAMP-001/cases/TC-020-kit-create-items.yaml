@@ -1,0 +1,27 @@
+id: TC-020
+title: Création d'un kit avec ses items et quantités initiales
+priority: P1
+requirement: L3 - Catalogue des kits, items et quantités initiales
+preconditions:
+  - Application connectée sous TEST_ADMIN.
+  - Base de test réinitialisée ; le code TEST-K-020 est absent.
+test_data:
+  - "Kit : TEST-K-020, nom Kit test 020, état non en panne"
+  - "Items : TEST_ITEM_A quantité 2 ; TEST_ITEM_B quantité 1"
+steps:
+  - number: 1
+    action: Ouvrir l'ajout de kit, renseigner les champs du kit et ajouter les deux items avec leurs quantités.
+    expected: Les deux items sont visibles dans le formulaire avant validation.
+  - number: 2
+    action: Valider la création puis rechercher le kit par le code TEST-K-020.
+    expected: Un seul kit correspondant est affiché avec l'état non en panne.
+  - number: 3
+    action: Afficher les items du kit et contrôler les données dans la base de test.
+    expected: Les deux items et leurs quantités 2 et 1 sont associés au bon kit.
+pass_criteria:
+  - Le code du kit est unique et le kit est retrouvable.
+  - Les items et quantités initiales persistent sans association erronée.
+automation:
+  candidate: true
+  target: QtTest
+notes: null

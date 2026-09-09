@@ -1,0 +1,26 @@
+id: TC-003
+title: Retrait de l'accès après invalidation du jeton de session
+priority: P1
+requirement: L1 - Contrôle de validité de session côté base
+preconditions:
+  - Application connectée sous TEST_ADMIN sur la base de test dédiée.
+  - Un accès SQL de test est autorisé pour modifier uniquement le jeton du compte TEST_ADMIN.
+test_data:
+  - "Jeton de TEST_ADMIN remplacé en base par une valeur dédiée au test."
+steps:
+  - number: 1
+    action: Noter que TEST_ADMIN est connecté dans l'application.
+    expected: Les actions autorisées par la session sont disponibles.
+  - number: 2
+    action: Depuis l'accès SQL de test, remplacer le jeton de TEST_ADMIN par la valeur de test.
+    expected: La modification est visible dans la base de test.
+  - number: 3
+    action: Déclencher une action nécessitant un accès à la base, par exemple actualiser une liste.
+    expected: L'application détecte la session invalide, repasse à l'état déconnecté et désactive les actions protégées.
+pass_criteria:
+  - Une session dont le jeton ne correspond plus ne conserve pas l'accès aux actions protégées.
+  - L'application ne ferme pas brutalement.
+automation:
+  candidate: false
+  target: null
+notes: "Ce scénario ne simule pas deux instances concurrentes, hors périmètre de CAMP-001."

@@ -1,0 +1,32 @@
+# Template only: this file is not interpreted or applied in the discovery phase.
+fixture_id: CAMP-001-TC-001
+schema_assumption: "Dedicated MySQL schema migrated with liquibase/microbrico-changelog.mysql.sql"
+isolation:
+  mode: reset-before-and-after-test
+  namespace: CAMP001_TC001
+accounts:
+  - key: TEST_ADMIN
+    utinfo: TAD001
+    privilege: admin
+    first_name: Test
+    last_name: Admin
+    email: test.admin.camp001@example.invalid
+    telephone: "0000000000"
+    caution: "0.00"
+    adhesion_payed: 1
+    date_caution: "2026-01-01"
+    # Supply at runtime from a protected test secret; never commit a password.
+    password_sha1: ${MB_TEST_ADMIN_PASSWORD_SHA1}
+    token: null
+expected_initial_state:
+  active_reservations_for_fixture_users: 0
+  active_checkouts_for_fixture_users: 0
+  logs_for_fixture_users: 0
+  uid_resa: unchanged
+  uid_sortie: unchanged
+runtime_inputs:
+  - MB_TEST_ADMIN_PASSWORD
+  - MB_TEST_ADMIN_PASSWORD_SHA1
+cleanup:
+  - Remove fixture logs, reservations, checkouts and users in foreign-key-safe order.
+  - No counter reset is needed: TC-001 does not create a reservation or checkout.

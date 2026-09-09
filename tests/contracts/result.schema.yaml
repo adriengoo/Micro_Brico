@@ -1,0 +1,12 @@
+# Contrat minimal d'un résultat d'exécution.
+test_id: TC-XXX
+status: PASS # PASS, FAIL, BLOCKED ou INCONCLUSIVE
+executed_at: "YYYY-MM-DDTHH:MM:SS+02:00"
+environment: Local Qt + MySQL
+evidence:
+  - Chemin vers un log, une capture ou une sortie de test
+actual_result: Résultat observé
+defect:
+  id: null
+  summary: null
+  severity: null

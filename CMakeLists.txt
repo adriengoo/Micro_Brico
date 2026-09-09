@@ -23,6 +23,8 @@ set(PROJECT_SOURCES
         datamodel.h
         utilisateur.cpp
         utilisateur.h
+        tests/automation/test_database_config.cpp
+        tests/automation/test_database_config.h
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -83,6 +85,67 @@ target_link_libraries(micro_brico_app PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 
 find_package(Qt6 REQUIRED COMPONENTS Sql)
 target_link_libraries(micro_brico_app PRIVATE Qt6::Sql)
+
+option(MICROBRICO_BUILD_TESTS "Build the database-free test foundation" ON)
+
+if(MICROBRICO_BUILD_TESTS)
+    enable_testing()
+    find_package(Qt6 REQUIRED COMPONENTS Test)
+
+    # This target intentionally contains no QSqlDatabase usage.  It verifies
+    # that a future TC-001 run can only be pointed at an explicitly named test
+    # database before an IHM/integration test is allowed to start.
+    add_executable(micro_brico_test_foundation
+        tests/automation/test_database_config.cpp
+        tests/automation/test_database_config.h
+        tests/automation/tc001_login_session_foundation.cpp
+    )
+    target_link_libraries(micro_brico_test_foundation PRIVATE Qt6::Core Qt6::Test)
+
+    add_test(NAME CAMP-001.TC-001.foundation
+             COMMAND micro_brico_test_foundation)
+    set_tests_properties(CAMP-001.TC-001.foundation PROPERTIES
+        SKIP_RETURN_CODE 77)
+
+    add_executable(micro_brico_tc001
+        tests/automation/tc001_login_session.cpp
+        tests/automation/test_database_config.cpp
+        tests/automation/test_database_config.h
+        mainwindow.cpp
+        mainwindow.h
+        mainwindow.ui
+        connect_db.cpp
+        connect_db.h
+        datamodel.cpp
+        datamodel.h
+        utilisateur.cpp
+        utilisateur.h
+        popups/popupaddusers.h popups/popupaddusers.cpp popups/popupaddusers.ui
+        popups/login_connect.h popups/login_connect.cpp popups/login_connect.ui
+        popups/delete_user.h popups/delete_user.cpp popups/delete_user.ui
+        logger/logbrowser.h logger/logbrowser.cpp
+        logger/logbrowserdialog.h logger/logbrowserdialog.cpp
+        popups/poppupaddkit.h popups/poppupaddkit.cpp popups/poppupaddkit.ui
+        kit.h kit.cpp
+        item.h item.cpp
+        money.h money.cpp
+        resa.h resa.cpp
+        utils.h utils.cpp
+        popups/popupsortirresa.h popups/popupsortirresa.cpp popups/popupsortirresa.ui
+        sortie.h sortie.cpp
+        log.h log.cpp
+        logger/log_user_kit_appli.h logger/log_user_kit_appli.cpp logger/log_user_kit_appli.ui
+        types.h
+        popups/popuppchangeitemquantities.h popups/popuppchangeitemquantities.cpp popups/popuppchangeitemquantities.ui
+    )
+    target_include_directories(micro_brico_tc001 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(micro_brico_tc001 PRIVATE Qt6::Widgets Qt6::Sql Qt6::Test)
+    add_test(NAME CAMP-001.TC-001.login-session
+             COMMAND micro_brico_tc001)
+    set_tests_properties(CAMP-001.TC-001.login-session PROPERTIES
+        SKIP_RETURN_CODE 77)
+endif()
+
 include(GNUInstallDirs)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
