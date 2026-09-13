@@ -24,6 +24,17 @@
             }
         },
         {
+            "name": "qt-6.11.2-mingw-release",
+            "displayName": "Qt 6.11.2 MinGW Release",
+            "inherits": "qt-6.11.2-mingw-debug",
+            "generator": "MinGW Makefiles",
+            "binaryDir": "${sourceDir}/build/Desktop_Qt_6_11_2_MinGW_64_bit_Release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_MAKE_PROGRAM": "C:/Qt/Tools/mingw1310_64/bin/mingw32-make.exe"
+            }
+        },
+        {
             "name": "Custom configure preset",
             "displayName": "Custom configure preset",
             "description": "Sets Ninja generator, build and install directory",
@@ -44,6 +55,14 @@
         }
     ],
     "buildPresets": [
+        {
+            "name": "qt-6.11.2-mingw-release",
+            "displayName": "Build Qt 6.11.2 MinGW Release",
+            "configurePreset": "qt-6.11.2-mingw-release",
+            "targets": [
+                "micro_brico_app"
+            ]
+        },
         {
             "name": "qt-6.11.2-mingw-debug",
             "displayName": "Build Qt 6.11.2 MinGW Debug",

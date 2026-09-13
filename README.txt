@@ -1,3 +1,4 @@
+
 ####### Prérequis pour travailler sur le projet: 
     - Installer QT Creator 12.0.2 (avec QT 6.11.2, je ne sais plus si QTCreator installe QT 6.11.2 lors de son installation)
     - Installer mysql 8.0.35 https://dev.mysql.com/downloads/installer/
@@ -73,5 +74,3 @@
     );
 
     Ici il y a des informations sur le format des changesets : https://docs.liquibase.com/concepts/changelogs/changeset.html
-
-    
