@@ -1,22 +1,26 @@
 id: TC-021
 title: Kit en panne non ajoutable au panier de réservation
 priority: P1
+objective: Vérifier qu'un kit marqué en panne ne peut pas être mis au panier ni réservé.
 requirement: L3/L4 - État en panne et sélection pour réservation
 preconditions:
   - Application connectée sous TEST_ADMIN.
   - Base de test réinitialisée avec le kit TEST-K-021 marqué en panne et non sorti.
-  - La date sélectionnée est une date future dédiée au test.
+  - La date sélectionnée est J+7, calculée le jour de l'exécution.
 test_data:
   - "Kit : TEST-K-021, en panne"
 steps:
   - number: 1
-    action: Aller dans les réservations, rechercher TEST-K-021 et sélectionner le kit.
+    purpose: Vérifier que l'état de panne est visible sur le kit ciblé.
+    action: "Étape 1 — Aller dans les réservations, sélectionner J+7, rechercher TEST-K-021 et sélectionner le kit."
     expected: Le kit est signalé en panne dans la liste.
   - number: 2
-    action: Tenter d'ajouter le kit au panier.
+    purpose: Vérifier l'interdiction métier de mise au panier.
+    action: "Étape 2 — Tenter d'ajouter le kit au panier."
     expected: Le kit n'est pas ajouté au panier et aucune réservation n'est créée.
   - number: 3
-    action: Vérifier la table de réservation de la base de test pour TEST-K-021 et la date de test.
+    purpose: Vérifier qu'aucune réservation n'est persistée.
+    action: "Étape 3 — Vérifier la table resa pour TEST-K-021 à J+7."
     expected: Aucune ligne active de réservation n'existe pour ce kit et cette date.
 pass_criteria:
   - Un kit en panne ne peut pas entrer dans le panier.
@@ -24,4 +28,4 @@ pass_criteria:
 automation:
   candidate: true
   target: QtTest
-notes: "Le produit semble interdire ce cas ; la règle métier d'interdiction reste à confirmer (RM-003)."
+notes: "RM-003 est validée. Fixture dédiée et objectName de recherche/panier restent à fournir."

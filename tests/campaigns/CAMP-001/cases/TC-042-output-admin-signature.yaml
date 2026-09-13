@@ -1,6 +1,7 @@
 id: TC-042
 title: Sortie signée par administrateur pour un utilisateur absent
 priority: P0
+objective: Vérifier qu'un administrateur connecté peut sortir un kit au bénéficiaire identifié par utinfo avec la signature administrateur.
 requirement: L5 - Signature administrateur et traçabilité
 preconditions:
   - Application connectée sous TEST_ADMIN dont le mot de passe est connu.
@@ -11,13 +12,16 @@ test_data:
   - "Signataire : TEST_ADMIN"
 steps:
   - number: 1
-    action: Sélectionner TEST_USER_042 et TEST-K-042 dans l'onglet sorties, activer l'option de signature administrateur si elle est proposée.
+    purpose: Choisir le parcours explicitement autorisé de signature administrateur (RM-002).
+    action: "Étape 1 — Sous session TEST_ADMIN, sélectionner TEST_USER_042 et TEST-K-042, puis cocher SORTIE_checkBox_resa_mdpadmin."
     expected: La validation attend le mot de passe de TEST_ADMIN.
   - number: 2
-    action: Saisir le mot de passe valide de TEST_ADMIN, valider, puis confirmer la sortie avec la quantité proposée.
+    purpose: Valider la sortie par le mot de passe de l'administrateur, sans mot de passe bénéficiaire.
+    action: "Étape 2 — Saisir le mot de passe fixture de TEST_ADMIN, valider, puis confirmer la sortie avec pushButton_sortir."
     expected: La sortie est créée pour TEST_USER_042.
   - number: 3
-    action: Contrôler la sortie et les logs liés au kit et à TEST_USER_042.
+    purpose: Vérifier l'identité du bénéficiaire et la traçabilité de la délégation.
+    action: "Étape 3 — Contrôler sortie active et logs liés à TEST-K-042 et TEST_USER_042."
     expected: La sortie active est rattachée à TEST_USER_042 et une trace indique la signature par TEST_ADMIN.
 pass_criteria:
   - L'utilisateur bénéficiaire n'est pas remplacé par le signataire administrateur.
@@ -25,4 +29,4 @@ pass_criteria:
 automation:
   candidate: true
   target: QtTest
-notes: "Le droit d'un administrateur à signer pour autrui doit être validé avec le métier (RM-002)."
+notes: "RM-002 est validée. Fixture déterministe, compteurs et état attendu de la resa source restent à fournir."

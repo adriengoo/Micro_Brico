@@ -1,6 +1,7 @@
 id: TC-011
 title: Refus d'un utinfo utilisateur dupliqué
 priority: P1
+objective: Vérifier qu'un utinfo dupliqué ne crée aucune ligne utilisateur ni effet annexe.
 requirement: L2 - Intégrité de l'identifiant utilisateur
 preconditions:
   - Application connectée sous TEST_ADMIN.
@@ -9,15 +10,21 @@ test_data:
   - "Nouvelle saisie avec utinfo identique : TEST_U_011"
 steps:
   - number: 1
-    action: Ouvrir l'ajout d'utilisateur et saisir un utilisateur dont l'utinfo est TEST_U_011.
+    purpose: Soumettre une seconde création avec des données autrement valides.
+    action: "Étape 1 — Ouvrir l'ajout utilisateur et saisir toutes les données fixture avec utinfo TEST_U_011."
     expected: La saisie peut être complétée jusqu'à la validation.
   - number: 2
-    action: Valider l'ajout puis relever le retour IHM et le contenu de la base de test.
-    expected: L'ajout est refusé de manière visible et aucune seconde ligne TEST_U_011 n'est créée.
+    purpose: Vérifier l'unicité et l'absence de persistance partielle.
+    action: "Étape 2 — Valider, compter les lignes TEST_U_011 et rechercher les valeurs distinctives de la nouvelle saisie."
+    expected: L'ajout est refusé, une seule ligne TEST_U_011 demeure et aucune valeur distinctive n'est persistée.
+  - number: 3
+    purpose: Vérifier l'absence d'effet annexe inattendu.
+    action: "Étape 3 — Comparer le nombre de logs de TEST_U_011 à sa valeur initiale fixture."
+    expected: Le nombre de logs est inchangé.
 pass_criteria:
   - La base ne contient qu'un utilisateur avec TEST_U_011.
   - L'opérateur reçoit un retour exploitable sur l'échec.
 automation:
   candidate: true
   target: QtTest
-notes: null
+notes: "Fixture complète, valeur initiale des logs et convention de contrôle SQL restent à fournir."

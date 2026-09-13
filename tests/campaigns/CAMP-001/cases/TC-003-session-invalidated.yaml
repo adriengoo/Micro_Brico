@@ -1,6 +1,7 @@
 id: TC-003
 title: Retrait de l'accès après invalidation du jeton de session
 priority: P1
+objective: Vérifier qu'une divergence de jeton serveur retire les accès protégés sans fermeture brutale.
 requirement: L1 - Contrôle de validité de session côté base
 preconditions:
   - Application connectée sous TEST_ADMIN sur la base de test dédiée.
@@ -9,13 +10,16 @@ test_data:
   - "Jeton de TEST_ADMIN remplacé en base par une valeur dédiée au test."
 steps:
   - number: 1
-    action: Noter que TEST_ADMIN est connecté dans l'application.
+    purpose: Établir que la session à invalider est active.
+    action: "Étape 1 — Vérifier que TEST_ADMIN est connecté et que RESA_pushButton_reserver est actif."
     expected: Les actions autorisées par la session sont disponibles.
   - number: 2
-    action: Depuis l'accès SQL de test, remplacer le jeton de TEST_ADMIN par la valeur de test.
+    purpose: Simuler une invalidation serveur contrôlée.
+    action: "Étape 2 — Depuis l'accès SQL de test, remplacer le jeton de TEST_ADMIN par TC003_INVALIDATED_TOKEN."
     expected: La modification est visible dans la base de test.
   - number: 3
-    action: Déclencher une action nécessitant un accès à la base, par exemple actualiser une liste.
+    purpose: Déclencher le contrôle de jeton et observer son effet IHM.
+    action: "Étape 3 — Utiliser l'action d'actualisation identifiée par le socle technique comme appelant is_user_connected."
     expected: L'application détecte la session invalide, repasse à l'état déconnecté et désactive les actions protégées.
 pass_criteria:
   - Une session dont le jeton ne correspond plus ne conserve pas l'accès aux actions protégées.
@@ -23,4 +27,4 @@ pass_criteria:
 automation:
   candidate: false
   target: null
-notes: "Ce scénario ne simule pas deux instances concurrentes, hors périmètre de CAMP-001."
+notes: "Bloquant : l'action IHM appelant réellement is_user_connected n'est pas cartographiée. Aucun scénario multi-instance n'est couvert."

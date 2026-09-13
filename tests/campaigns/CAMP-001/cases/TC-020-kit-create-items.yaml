@@ -1,6 +1,7 @@
 id: TC-020
 title: Création d'un kit avec ses items et quantités initiales
 priority: P1
+objective: Vérifier qu'un kit et ses items sont créés avec des quantités correctes et persistées.
 requirement: L3 - Catalogue des kits, items et quantités initiales
 preconditions:
   - Application connectée sous TEST_ADMIN.
@@ -10,18 +11,21 @@ test_data:
   - "Items : TEST_ITEM_A quantité 2 ; TEST_ITEM_B quantité 1"
 steps:
   - number: 1
-    action: Ouvrir l'ajout de kit, renseigner les champs du kit et ajouter les deux items avec leurs quantités.
+    purpose: Constituer le kit complet avant persistance.
+    action: "Étape 1 — Ouvrir l'ajout de kit, renseigner les champs et ajouter les deux items avec leurs quantités."
     expected: Les deux items sont visibles dans le formulaire avant validation.
   - number: 2
-    action: Valider la création puis rechercher le kit par le code TEST-K-020.
+    purpose: Créer le kit et vérifier sa recherche fonctionnelle.
+    action: "Étape 2 — Valider la création puis rechercher le kit par le code TEST-K-020."
     expected: Un seul kit correspondant est affiché avec l'état non en panne.
   - number: 3
-    action: Afficher les items du kit et contrôler les données dans la base de test.
-    expected: Les deux items et leurs quantités 2 et 1 sont associés au bon kit.
+    purpose: Vérifier les associations et quantités persistées.
+    action: "Étape 3 — Afficher les items et contrôler quantity, quantity_init et quantity_out dans la base de test."
+    expected: Les deux items sont associés au bon kit ; quantity et quantity_init valent 2 et 1, et quantity_out vaut 0.
 pass_criteria:
   - Le code du kit est unique et le kit est retrouvable.
   - Les items et quantités initiales persistent sans association erronée.
 automation:
   candidate: true
   target: QtTest
-notes: null
+notes: "Modification, duplication, recherche par nom et code dupliqué restent à planifier. ObjectName et fixture complète restent requis."

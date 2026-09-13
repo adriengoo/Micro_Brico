@@ -2,6 +2,7 @@
 id: TC-XXX
 title: Titre court et unique
 priority: P0 # P0 (bloquant), P1, P2 ou P3
+objective: But général du test, formulé indépendamment de ses étapes
 requirement: Fonction ou règle métier couverte
 preconditions:
   - Application, données et droits nécessaires
@@ -9,6 +10,7 @@ test_data:
   - Donnée d'entrée pertinente
 steps:
   - number: 1
+    purpose: Pourquoi cette étape est exécutée et ce qu'elle doit démontrer
     action: Action reproductible pour l'opérateur ou l'automate
     expected: Résultat observable et vérifiable
 pass_criteria:

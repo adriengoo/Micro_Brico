@@ -1,6 +1,7 @@
 id: TC-041
 title: Sortie signée par l'utilisateur avec mise à jour du stock
 priority: P0
+objective: Vérifier une sortie standard validée dans la session administrateur par les identifiants du bénéficiaire et son effet sur le stock.
 requirement: L5 - Sortie planifiée, quantités et traçabilité
 preconditions:
   - Application connectée sous TEST_ADMIN.
@@ -11,16 +12,20 @@ test_data:
   - "Quantité remise : 2 unités de TEST_ITEM_041"
 steps:
   - number: 1
-    action: Sélectionner TEST_USER_041 et TEST-K-041 dans l'onglet sorties, saisir le mot de passe valide de TEST_USER_041 et le valider.
+    purpose: Vérifier l'identification standard du bénéficiaire sous session administrateur (RM-002).
+    action: "Étape 1 — Sous session TEST_ADMIN, sélectionner TEST_USER_041 et TEST-K-041, saisir le mot de passe fixture de TEST_USER_041 et le valider."
     expected: Le statut confirme le mot de passe valide et autorise la sortie.
   - number: 2
-    action: Déclencher la sortie, conserver la quantité proposée de 2 pour TEST_ITEM_041 dans la boîte de sortie, puis confirmer.
+    purpose: Créer la sortie et le mouvement de quantité attendu.
+    action: "Étape 2 — Dans PopupSortirResa, confirmer la sortie de 2 unités de TEST_ITEM_041 avec pushButton_sortir."
     expected: La sortie est confirmée et TEST-K-041 apparaît comme sorti pour TEST_USER_041.
   - number: 3
-    action: Contrôler la base de test.
+    purpose: Vérifier précisément sortie, stock et réservation source.
+    action: "Étape 3 — Contrôler sortie active, resa source, et la ligne item TEST_ITEM_041 (quantity=0, quantity_out=2, quantity_init=2)."
     expected: Une sortie active dédiée existe pour TEST-K-041 et TEST_USER_041 ; la quantité persistée de TEST_ITEM_041 est 0.
   - number: 4
-    action: Consulter les logs utilisateur et kit.
+    purpose: Vérifier une trace de sortie non signée par délégation administrateur.
+    action: "Étape 4 — Consulter les logs utilisateur et kit du numéro de sortie créé."
     expected: La sortie et l'évolution de quantité sont tracées, sans mention de signature forcée par administrateur.
 pass_criteria:
   - La sortie active, l'utilisateur et le kit sont cohérents.
@@ -29,4 +34,4 @@ pass_criteria:
 automation:
   candidate: true
   target: QtTest
-notes: "L'éligibilité adhésion/caution et la règle exacte de signature utilisateur sont à confirmer (RM-001, RM-002)."
+notes: "RM-001/RM-002 sont validées. Fixture déterministe (ids, hashes, id_resa, compteurs) et état attendu de la resa source restent à fournir."

@@ -1,6 +1,7 @@
 id: TC-010
 title: Création puis recherche d'un utilisateur dédié
 priority: P1
+objective: Vérifier qu'un administrateur crée un utilisateur complet et le retrouve par utinfo et par nom.
 requirement: L2 - Gestion et recherche des utilisateurs
 preconditions:
   - Application connectée sous TEST_ADMIN.
@@ -9,13 +10,16 @@ test_data:
   - "Utilisateur : TEST_U_010, nom Martin, prénom Test, courriel test-u-010@example.invalid"
 steps:
   - number: 1
-    action: Ouvrir l'ajout d'utilisateur et renseigner toutes les données de test obligatoires, puis valider.
+    purpose: Créer une ligne utilisateur avec toutes les données fixture.
+    action: "Étape 1 — Ouvrir l'ajout utilisateur, renseigner toutes les données fixture obligatoires, puis valider."
     expected: Un message de succès ou une ligne nouvellement créée confirme l'ajout.
   - number: 2
-    action: Rechercher l'utilisateur par utinfo TEST_U_010 puis par nom Martin.
+    purpose: Vérifier les deux chemins de recherche.
+    action: "Étape 2 — Rechercher l'utilisateur par utinfo TEST_U_010 puis par nom Martin."
     expected: La recherche retourne l'utilisateur créé avec les valeurs saisies.
   - number: 3
-    action: Contrôler la ligne utilisateur dans la base de test par son utinfo.
+    purpose: Vérifier la persistance complète, au-delà de l'affichage.
+    action: "Étape 3 — Contrôler la ligne utilisateur dans la base de test par son utinfo."
     expected: Une seule ligne correspond et ses champs fonctionnels concordent avec les données saisies.
 pass_criteria:
   - L'utilisateur créé est retrouvé par les deux recherches.
@@ -23,4 +27,4 @@ pass_criteria:
 automation:
   candidate: true
   target: QtTest
-notes: "Les champs réellement obligatoires et les droits de création sont à confirmer (RM-002)."
+notes: "RM-002 est validée. Restent à fournir : tous les champs fixture, les objectName et les valeurs SQL attendues."

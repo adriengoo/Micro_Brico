@@ -1,6 +1,7 @@
 id: TC-002
 title: Refus d'une connexion avec mot de passe invalide
 priority: P1
+objective: Vérifier qu'un mot de passe incorrect n'ouvre pas de session ni ne change le jeton de l'utilisateur.
 requirement: L1 - Refus des identifiants invalides
 preconditions:
   - Application démarrée, sans session ouverte, connectée à la base de test dédiée.
@@ -10,15 +11,21 @@ test_data:
   - "Mot de passe : mauvais-mdp"
 steps:
   - number: 1
-    action: Ouvrir la boîte de connexion, saisir les données de test et valider.
+    purpose: Soumettre une authentification volontairement invalide.
+    action: "Étape 1 — Ouvrir login_connect, saisir les données de test dans lineEdit_utinfo et lineEdit_mdp, puis cliquer pushButton_ok."
     expected: La connexion est refusée par un message compréhensible.
   - number: 2
-    action: Fermer le message et observer l'application.
+    purpose: Vérifier que le refus ne donne pas d'accès IHM.
+    action: "Étape 2 — Fermer le message et observer l'application."
     expected: Aucun utilisateur n'est connecté et les actions protégées restent inactives.
+  - number: 3
+    purpose: Vérifier l'absence d'effet de bord persistant.
+    action: "Étape 3 — Comparer le token SQL de TEST_ADMIN à sa valeur initiale fixture."
+    expected: Le token est inchangé.
 pass_criteria:
   - Aucun accès authentifié n'est accordé avec le mot de passe invalide.
   - L'application reste utilisable après le refus.
 automation:
   candidate: true
   target: QtTest
-notes: "CAMP-001 vérifie le comportement fonctionnel ; SHA-1 est un risque constaté, sans test de correction prévu."
+notes: "Le token initial et l'accès SQL de lecture sont requis. SHA-1 est hors correction CAMP-001."

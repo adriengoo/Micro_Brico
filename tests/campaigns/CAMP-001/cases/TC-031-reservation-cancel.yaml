@@ -1,24 +1,29 @@
 id: TC-031
 title: Annulation complète d'une réservation d'un kit
 priority: P0
+objective: Vérifier que l'annulation complète d'une réservation rend le kit à nouveau réservable à la même date.
 requirement: L4 - Annulation et désactivation d'une réservation
 preconditions:
   - Application connectée sous TEST_ADMIN.
-  - Base de test réinitialisée avec une réservation active dédiée RESA_031, portant sur le seul kit TEST-K-031 et une date future.
+  - Base de test réinitialisée avec une réservation active fixture id_resa=31031, portant sur le seul kit TEST-K-031 à J+7.
 test_data:
-  - "Réservation active : RESA_031, un seul kit TEST-K-031"
+  - "Réservation active : id_resa=31031, un seul kit TEST-K-031, start_date=J+7"
 steps:
   - number: 1
-    action: Afficher les réservations de l'utilisateur lié à RESA_031 et sélectionner la réservation.
+    purpose: Identifier sans ambiguïté la réservation à annuler.
+    action: "Étape 1 — Afficher les réservations de l'utilisateur fixture et sélectionner id_resa=31031."
     expected: TEST-K-031 et les données de RESA_031 sont visibles.
   - number: 2
-    action: Demander la suppression de la réservation puis confirmer dans la boîte de confirmation.
+    purpose: Déclencher l'annulation complète validée par RM-006.
+    action: "Étape 2 — Demander la suppression de la réservation puis confirmer dans la boîte de confirmation."
     expected: La réservation disparaît ou est signalée inactive dans l'IHM.
   - number: 3
-    action: Contrôler RESA_031 dans la base de test et rechercher TEST-K-031 pour la même date.
-    expected: La réservation est désactivée, aucune ligne active ne subsiste et le kit n'est plus affiché comme réservé pour cette date.
+    purpose: Vérifier la désactivation et la disponibilité restaurée.
+    action: "Étape 3 — Contrôler resa où id_resa=31031 et rechercher TEST-K-031 pour J+7."
+    expected: La ligne fixture est is_active=0 et TEST-K-031 est réservable à J+7.
   - number: 4
-    action: Consulter les logs de l'utilisateur et du kit.
+    purpose: Vérifier la traçabilité sans revendiquer de contrôle témoin non défini.
+    action: "Étape 4 — Consulter les logs de l'utilisateur et du kit portant id_resa=31031."
     expected: L'annulation est tracée sans altérer un autre enregistrement de test.
 pass_criteria:
   - La réservation dédiée est intégralement désactivée.
@@ -27,4 +32,4 @@ pass_criteria:
 automation:
   candidate: true
   target: QtTest
-notes: "Ce cas ne couvre pas l'annulation partielle, hors périmètre initial."
+notes: "RM-006 est validée. Fixture SQL réelle (ids, J+7, compteur et texte de log attendu) reste à fournir ; annulation partielle hors périmètre."

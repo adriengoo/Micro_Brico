@@ -1,6 +1,7 @@
 id: TC-001
 title: Connexion valide et déconnexion
 priority: P0
+objective: Vérifier qu'une session administrateur valide donne accès aux actions protégées et que la déconnexion les retire.
 requirement: L1 - Authentification, session et accès aux actions protégées
 preconditions:
   - Application MicroBrico démarrée sur Windows 11 avec Qt 6.11.2.
@@ -10,13 +11,16 @@ test_data:
   - "Compte : TEST_ADMIN, privilège administrateur"
 steps:
   - number: 1
-    action: Vérifier l'état initial de l'application sans session ouverte.
+    purpose: Établir l'état de référence sans session.
+    action: "Étape 1 — Vérifier l'état initial de l'application sans session ouverte."
     expected: L'état indique que l'utilisateur est déconnecté et les actions de réservation, sortie et restitution sont inactives.
   - number: 2
-    action: Ouvrir la boîte de connexion, saisir TEST_ADMIN et son mot de passe valide, puis valider.
+    purpose: Démontrer qu'une authentification administrateur ouvre une session.
+    action: "Étape 2 — Ouvrir login_connect, saisir TEST_ADMIN et son mot de passe fixture dans lineEdit_mdp, puis cliquer pushButton_ok."
     expected: La connexion réussit, le statut affiche TEST_ADMIN et les fonctions autorisées à un administrateur deviennent disponibles.
   - number: 3
-    action: Utiliser l'action « Se déconnecter ».
+    purpose: Démontrer que la fermeture de session retire les droits IHM.
+    action: "Étape 3 — Utiliser l'action Se déconnecter."
     expected: Le statut revient à déconnecté et les actions de réservation, sortie et restitution redeviennent inactives.
 pass_criteria:
   - Une session valide permet l'accès aux fonctions attendues de TEST_ADMIN.
@@ -24,4 +28,4 @@ pass_criteria:
 automation:
   candidate: true
   target: QtTest
-notes: "Le détail des droits administrateur reste à confirmer (RM-002)."
+notes: "RM-002 est validée. Fixture, mot de passe et configuration dbtest/QMYSQL restent à fournir."
