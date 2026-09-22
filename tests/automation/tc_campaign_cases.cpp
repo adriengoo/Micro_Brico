@@ -3,6 +3,7 @@
 #include "datamodel.h"
 #include "mainwindow.h"
 #include "popups/login_connect.h"
+#include "popups/poppupaddkit.h"
 #include "popups/popupaddusers.h"
 #include "popups/popupsortirresa.h"
 
@@ -22,6 +23,7 @@
 #include <QSqlQuery>
 #include <QSpinBox>
 #include <QTableWidget>
+#include <QTextEdit>
 #include <QTimer>
 #include <QtTest>
 
@@ -36,6 +38,9 @@ constexpr auto kAdminUtinfo = "TEST_ADMIN";
 constexpr auto kUser010 = "TEST_U_010";
 constexpr auto kUser011 = "TEST_U_011";
 constexpr auto kKit021 = "TEST-K-021";
+constexpr auto kKit020 = "TEST-K-020";
+constexpr auto kItem020A = "TEST_ITEM_A";
+constexpr auto kItem020B = "TEST_ITEM_B";
 constexpr auto kUser040 = "UINFO_040";
 constexpr auto kUser042 = "UINFO_042";
 constexpr auto kKit040 = "TEST-K-040";
@@ -242,6 +247,7 @@ private slots:
     void tc002_login_invalid();
     void tc010_create_and_find_user();
     void tc011_duplicate_utinfo_rejected();
+    void tc020_create_kit_with_initial_items();
     void tc021_broken_kit_not_added_to_reservation_basket();
     void tc040_output_requires_recipient_password();
     void tc042_output_with_admin_signature_keeps_recipient();
@@ -474,6 +480,91 @@ void CampaignCases::tc011_duplicate_utinfo_rejected()
     QCOMPARE(fixture.scalar(QStringLiteral("SELECT COUNT(*) FROM utilisateur WHERE email=?"), {QStringLiteral("duplicate-attempt@example.invalid")}), 0);
     // TC-011 — Étape 3 : vérifier l'absence de log annexe.
     QCOMPARE(fixture.scalar(QStringLiteral("SELECT COUNT(*) FROM log l JOIN utilisateur u ON l.id_user=u.id WHERE u.utinfo=?"), {QString::fromLatin1(kUser011)}), 0);
+}
+
+void CampaignCases::tc020_create_kit_with_initial_items()
+{
+    auto *window = newLoggedInWindow();
+    QVERIFY(window);
+
+    // TC-020 — Étape 1 : renseigner le kit et ajouter les deux items au formulaire.
+    auto *addKit = window->findChild<QAction *>(QStringLiteral("actionajouter_nouveau_kit"));
+    QVERIFY(addKit);
+    addKit->trigger();
+    QTRY_VERIFY(visibleTopLevel<PoppupAddKit>() != nullptr);
+    auto *dialog = visibleTopLevel<PoppupAddKit>();
+    auto *name = dialog->findChild<QLineEdit *>(QStringLiteral("lineEdit_kit_name"));
+    auto *code = dialog->findChild<QLineEdit *>(QStringLiteral("lineEdit_kit_code"));
+    auto *purchaseDate = dialog->findChild<QLineEdit *>(QStringLiteral("lineEdit_kit_dateachat"));
+    auto *purchasePrice = dialog->findChild<QLineEdit *>(QStringLiteral("lineEdit_kitprix"));
+    auto *caution = dialog->findChild<QLineEdit *>(QStringLiteral("lineEdit_kitcaution"));
+    auto *broken = dialog->findChild<QCheckBox *>(QStringLiteral("checkBox"));
+    auto *itemName = dialog->findChild<QLineEdit *>(QStringLiteral("lineEdit_new_item"));
+    auto *initialQuantity = dialog->findChild<QSpinBox *>(QStringLiteral("spinBox_item_quantity_init"));
+    auto *currentQuantity = dialog->findChild<QSpinBox *>(QStringLiteral("spinBox_item_quantity_current"));
+    auto *addItem = dialog->findChild<QPushButton *>(QStringLiteral("pushButton_addobject"));
+    auto *basket = dialog->findChild<QListWidget *>(QStringLiteral("listWidget_itemBasket"));
+    auto *confirm = dialog->findChild<QPushButton *>(QStringLiteral("pushButton_OK"));
+    QVERIFY(name && code && purchaseDate && purchasePrice && caution && broken && itemName && initialQuantity && currentQuantity && addItem && basket && confirm);
+    name->setText(QStringLiteral("Kit test 020"));
+    code->setText(QString::fromLatin1(kKit020));
+    purchaseDate->setText(QStringLiteral("01.01.2026"));
+    purchasePrice->setText(QStringLiteral("1.00"));
+    caution->setText(QStringLiteral("0.00"));
+    broken->setChecked(false);
+    itemName->setText(QString::fromLatin1(kItem020A));
+    initialQuantity->setValue(2);
+    QVERIFY(currentQuantity->value() == 2);
+    QTest::mouseClick(addItem, Qt::LeftButton);
+    itemName->setText(QString::fromLatin1(kItem020B));
+    initialQuantity->setValue(1);
+    QVERIFY(currentQuantity->value() == 1);
+    QTest::mouseClick(addItem, Qt::LeftButton);
+    QTRY_COMPARE(basket->count(), 2);
+    QVERIFY(basket->item(0)->text().contains(QString::fromLatin1(kItem020A)));
+    QVERIFY(basket->item(1)->text().contains(QString::fromLatin1(kItem020B)));
+
+    // TC-020 — Étape 2 : valider la création et rechercher le kit par code.
+    QTest::mouseClick(confirm, Qt::LeftButton);
+    QTRY_VERIFY(visibleTopLevel<PoppupAddKit>() == nullptr);
+    auto *findByCode = window->findChild<QLineEdit *>(QStringLiteral("GESKIT_lineEdit_findkitbycode"));
+    auto *search = window->findChild<QPushButton *>(QStringLiteral("GESKIT_pushButton_getkit"));
+    auto *kitTable = window->findChild<QTableWidget *>(QStringLiteral("GESKIT_tableWidget_kit"));
+    QVERIFY(findByCode && search && kitTable);
+    findByCode->setText(QString::fromLatin1(kKit020));
+    QTest::mouseClick(search, Qt::LeftButton);
+    QTRY_COMPARE(kitTable->rowCount(), 1);
+    QVERIFY(kitTable->item(0, 0));
+    QVERIFY(kitTable->item(0, 0)->text() == QString::fromLatin1(kKit020));
+    QVERIFY(kitTable->item(0, 5));
+    QCOMPARE(kitTable->item(0, 5)->text(), QStringLiteral("Non"));
+
+    // TC-020 — Étape 3 : afficher les items et contrôler les quantités persistées.
+    auto *itemTable = window->findChild<QTableWidget *>(QStringLiteral("GESKIT_tableWidget_item"));
+    QVERIFY(itemTable);
+    QTest::mouseClick(kitTable->viewport(), Qt::LeftButton, Qt::NoModifier,
+                      kitTable->visualItemRect(kitTable->item(0, 0)).center());
+    QTRY_COMPARE(itemTable->rowCount(), 2);
+    QCOMPARE(itemTable->item(0, 0)->text(), QString::fromLatin1(kItem020A));
+    QCOMPARE(itemTable->item(0, 1)->text(), QStringLiteral("2"));
+    QCOMPARE(itemTable->item(0, 2)->text(), QStringLiteral("2"));
+    QCOMPARE(itemTable->item(1, 0)->text(), QString::fromLatin1(kItem020B));
+    QCOMPARE(itemTable->item(1, 1)->text(), QStringLiteral("1"));
+    QCOMPARE(itemTable->item(1, 2)->text(), QStringLiteral("1"));
+    QCOMPARE(fixture.scalar(QStringLiteral("SELECT COUNT(*) FROM kit WHERE code_kit=? AND en_panne=0"),
+                             {QString::fromLatin1(kKit020)}), 1);
+    QCOMPARE(fixture.scalar(QStringLiteral("SELECT quantity FROM item i JOIN kit k ON i.forkey=k.idkit WHERE k.code_kit=? AND i.name=?"),
+                             {QString::fromLatin1(kKit020), QString::fromLatin1(kItem020A)}), 2);
+    QCOMPARE(fixture.scalar(QStringLiteral("SELECT quantity_init FROM item i JOIN kit k ON i.forkey=k.idkit WHERE k.code_kit=? AND i.name=?"),
+                             {QString::fromLatin1(kKit020), QString::fromLatin1(kItem020A)}), 2);
+    QCOMPARE(fixture.scalar(QStringLiteral("SELECT quantity_out FROM item i JOIN kit k ON i.forkey=k.idkit WHERE k.code_kit=? AND i.name=?"),
+                             {QString::fromLatin1(kKit020), QString::fromLatin1(kItem020A)}), 0);
+    QCOMPARE(fixture.scalar(QStringLiteral("SELECT quantity FROM item i JOIN kit k ON i.forkey=k.idkit WHERE k.code_kit=? AND i.name=?"),
+                             {QString::fromLatin1(kKit020), QString::fromLatin1(kItem020B)}), 1);
+    QCOMPARE(fixture.scalar(QStringLiteral("SELECT quantity_init FROM item i JOIN kit k ON i.forkey=k.idkit WHERE k.code_kit=? AND i.name=?"),
+                             {QString::fromLatin1(kKit020), QString::fromLatin1(kItem020B)}), 1);
+    QCOMPARE(fixture.scalar(QStringLiteral("SELECT quantity_out FROM item i JOIN kit k ON i.forkey=k.idkit WHERE k.code_kit=? AND i.name=?"),
+                             {QString::fromLatin1(kKit020), QString::fromLatin1(kItem020B)}), 0);
 }
 
 void CampaignCases::tc021_broken_kit_not_added_to_reservation_basket()

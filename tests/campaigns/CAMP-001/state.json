@@ -16,7 +16,7 @@
     "report"
   ],
   "technical_foundation": {
-    "status": "partial_7_of_13_automated_db4qtest_only",
+    "status": "partial_8_of_13_automated_db4qtest_only",
     "stage": "technical-foundation",
     "assigned_agent_role": "technical test foundation",
     "starts_after": "review",

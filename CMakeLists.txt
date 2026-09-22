@@ -161,6 +161,7 @@ if(MICROBRICO_BUILD_TESTS)
             tc002_login_invalid
             tc010_create_and_find_user
             tc011_duplicate_utinfo_rejected
+            tc020_create_kit_with_initial_items
             tc021_broken_kit_not_added_to_reservation_basket
             tc040_output_requires_recipient_password
             tc042_output_with_admin_signature_keeps_recipient)

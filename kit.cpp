@@ -215,7 +215,11 @@ void Kit::setId_user_booked(int newId_user_booked)
 
 Kit::Kit(QObject *parent)
     : QObject{parent}
-{}
+{
+    // A kit created from an empty add-kit form must take the insert path.
+    // Existing kits opened for modification explicitly set this flag to false.
+    this->to_duplicate = true;
+}
 
 
 Kit::Kit(int idkit, const QString &nom, const QString &description, const QString &date_achat, const QString &prix_achat, const QString &texte_libre, const bool en_panne, const QString &code, const QString &caution, const bool to_duplicate)
