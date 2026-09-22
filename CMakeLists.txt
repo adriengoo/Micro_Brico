@@ -164,6 +164,7 @@ if(MICROBRICO_BUILD_TESTS)
             tc011_duplicate_utinfo_rejected
             tc020_create_kit_with_initial_items
             tc021_broken_kit_not_added_to_reservation_basket
+            tc031_cancel_reservation_and_restore_availability
             tc040_output_requires_recipient_password
             tc042_output_with_admin_signature_keeps_recipient)
         add_test(NAME CAMP-001.${CAMP001_CASE}

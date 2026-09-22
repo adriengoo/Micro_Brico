@@ -37,9 +37,12 @@ constexpr auto kApplicationConnection = "microbrico_test_db4qtest";
 constexpr auto kAdminUtinfo = "TEST_ADMIN";
 constexpr auto kUser010 = "TEST_U_010";
 constexpr auto kUser011 = "TEST_U_011";
+constexpr auto kUser031 = "UINFO_031";
 constexpr auto kKit021 = "TEST-K-021";
 constexpr auto kKit020 = "TEST-K-020";
 constexpr auto kKit003 = "TEST-K-003";
+constexpr auto kKit031 = "TEST-K-031";
+constexpr auto kKit031Witness = "TEST-K-31W";
 constexpr auto kItem020A = "TEST_ITEM_A";
 constexpr auto kItem020B = "TEST_ITEM_B";
 constexpr auto kUser040 = "UINFO_040";
@@ -149,7 +152,7 @@ bool CampaignFixture::open()
 bool CampaignFixture::reset()
 {
     const QString userList = "'TEST_ADMIN','TEST_U_010','TEST_U_011','UINFO_030','UINFO_031','UINFO_040','UINFO_041','UINFO_042','UINFO_043'";
-    const QString kitList = "'TEST-K-003','TEST-K-020','TEST-K-021','TEST-K-030','TEST-K-031','TEST-K-040','TEST-K-041','TEST-K-042','TEST-K-043'";
+    const QString kitList = "'TEST-K-003','TEST-K-020','TEST-K-021','TEST-K-030','TEST-K-031','TEST-K-31W','TEST-K-040','TEST-K-041','TEST-K-042','TEST-K-043'";
     QSqlQuery query(database);
 
     if (!runSql(query, "DELETE l FROM log l LEFT JOIN utilisateur u ON l.id_user=u.id LEFT JOIN kit k ON l.id_kit=k.idkit "
@@ -251,6 +254,7 @@ private slots:
     void tc011_duplicate_utinfo_rejected();
     void tc020_create_kit_with_initial_items();
     void tc021_broken_kit_not_added_to_reservation_basket();
+    void tc031_cancel_reservation_and_restore_availability();
     void tc040_output_requires_recipient_password();
     void tc042_output_with_admin_signature_keeps_recipient();
     void cleanup();
@@ -653,6 +657,79 @@ void CampaignCases::tc021_broken_kit_not_added_to_reservation_basket()
     // TC-021 — Étape 3 : vérifier l'absence de réservation persistée.
     QCOMPARE(fixture.scalar(QStringLiteral("SELECT COUNT(*) FROM resa r JOIN kit k ON r.id_kit=k.idkit WHERE k.code_kit=? AND r.start_date=? AND r.is_active=1"),
                              {QString::fromLatin1(kKit021), date}), 0);
+}
+
+void CampaignCases::tc031_cancel_reservation_and_restore_availability()
+{
+    const QDate date = plusSevenDays();
+    QVERIFY(fixture.insertUser(QString::fromLatin1(kUser031), QStringLiteral("Reservation"),
+                               QStringLiteral("Fixture"), QString::fromLatin1(kUserPassword)));
+    QVERIFY(fixture.insertKit(QString::fromLatin1(kKit031), QStringLiteral("Kit reservation 031"), false));
+    QVERIFY(fixture.insertKit(QString::fromLatin1(kKit031Witness), QStringLiteral("Kit temoin 031"), false));
+    QVERIFY(fixture.insertReservation(QString::fromLatin1(kUser031), QString::fromLatin1(kKit031), date, 31031));
+    QVERIFY(fixture.insertReservation(QString::fromLatin1(kUser031), QString::fromLatin1(kKit031Witness), date, 31032));
+    const int uidResaCountBefore = fixture.scalar(QStringLiteral("SELECT COUNT(*) FROM uid_resa"));
+    const int uidResaMaxBefore = fixture.scalar(QStringLiteral("SELECT COALESCE(MAX(iduid_resa), 0) FROM uid_resa"));
+
+    auto *window = newLoggedInWindow();
+    QVERIFY(window);
+    auto *user = window->findChild<QLineEdit *>(QStringLiteral("RESA_lineEdit_resa_utinfo_user"));
+    auto *show = window->findChild<QPushButton *>(QStringLiteral("RESA_pushButton_resa_showResa"));
+    auto *reservations = window->findChild<QListWidget *>(QStringLiteral("RESA_listWidget_resa_currentResa"));
+    auto *kitsOfReservation = window->findChild<QListWidget *>(QStringLiteral("RESA_listWidget_resa_kitsOfResa"));
+    auto *cancel = window->findChild<QPushButton *>(QStringLiteral("RESA_pushButton_suppr_resa"));
+    auto *calendar = window->findChild<QCalendarWidget *>(QStringLiteral("RESA_calendarWidget"));
+    auto *kitCode = window->findChild<QLineEdit *>(QStringLiteral("RESA_lineEdit_findkitbycode"));
+    auto *findKit = window->findChild<QPushButton *>(QStringLiteral("RESA_pushButton_getkit_resa"));
+    auto *availableKits = window->findChild<QListWidget *>(QStringLiteral("RESA_listWidget_resa"));
+    QVERIFY(user && show && reservations && kitsOfReservation && cancel && calendar && kitCode && findKit && availableKits);
+
+    // TC-031 — Étape 1 : afficher et sélectionner sans ambiguïté la réservation 31031.
+    user->setText(QString::fromLatin1(kUser031));
+    QTest::mouseClick(show, Qt::LeftButton);
+    QTRY_COMPARE(reservations->count(), 2);
+    int reservationRow = -1;
+    for (int row = 0; row < reservations->count(); ++row) {
+        if (reservations->item(row)->text().startsWith(QStringLiteral("31031 -"))) {
+            reservationRow = row;
+            break;
+        }
+    }
+    QVERIFY(reservationRow >= 0);
+    QTest::mouseClick(reservations->viewport(), Qt::LeftButton, Qt::NoModifier,
+                      reservations->visualItemRect(reservations->item(reservationRow)).center());
+    QTRY_COMPARE(kitsOfReservation->count(), 1);
+    QVERIFY(kitsOfReservation->item(0)->text().contains(QString::fromLatin1(kKit031)));
+    QVERIFY(cancel->isEnabled());
+
+    // TC-031 — Étape 2 : confirmer l'annulation complète de la réservation sélectionnée.
+    scheduleMessageBoxButton(QMessageBox::Yes);
+    QTest::mouseClick(cancel, Qt::LeftButton);
+    QTRY_COMPARE(fixture.scalar(QStringLiteral("SELECT is_active FROM resa WHERE id_resa=31031")), 0);
+    QTRY_COMPARE(reservations->count(), 1);
+
+    // TC-031 — Étape 3 : contrôler la désactivation et la disponibilité du kit à J+7.
+    QCOMPARE(fixture.scalar(QStringLiteral("SELECT COUNT(*) FROM resa WHERE id_resa=31031 AND is_active=1")), 0);
+    QCOMPARE(fixture.scalar(QStringLiteral("SELECT COUNT(*) FROM resa WHERE id_resa=31032 AND is_active=1")), 1);
+    QCOMPARE(fixture.scalar(QStringLiteral("SELECT COUNT(*) FROM uid_resa")), uidResaCountBefore);
+    QCOMPARE(fixture.scalar(QStringLiteral("SELECT COALESCE(MAX(iduid_resa), 0) FROM uid_resa")), uidResaMaxBefore);
+    calendar->setSelectedDate(date);
+    kitCode->setText(QString::fromLatin1(kKit031));
+    QTest::mouseClick(findKit, Qt::LeftButton);
+    QTRY_COMPARE(availableKits->count(), 1);
+    QVERIFY(availableKits->item(0)->text().contains(QString::fromLatin1(kKit031)));
+    QVERIFY(!availableKits->item(0)->text().contains(QStringLiteral("déjà réservé à cette date")));
+
+    // TC-031 — Étape 4 : vérifier le log utilisateur+kit et préserver l'enregistrement témoin.
+    QCOMPARE(fixture.scalar(QStringLiteral(
+                 "SELECT COUNT(*) FROM log l JOIN utilisateur u ON l.id_user=u.id "
+                 "JOIN kit k ON l.id_kit=k.idkit WHERE u.utinfo=? AND k.code_kit=? "
+                 "AND l.text LIKE ?"),
+                 {QString::fromLatin1(kUser031), QString::fromLatin1(kKit031), QStringLiteral("%31031%")} ), 1);
+    QCOMPARE(fixture.scalar(QStringLiteral(
+                 "SELECT COUNT(*) FROM log l JOIN kit k ON l.id_kit=k.idkit "
+                 "WHERE k.code_kit=? AND l.text LIKE ?"),
+                 {QString::fromLatin1(kKit031Witness), QStringLiteral("%31031%")} ), 0);
 }
 
 void CampaignCases::tc040_output_requires_recipient_password()

@@ -825,11 +825,15 @@ void Connect_db::deactivate_resa_prior_to_date(QDate i_current_date)
     runQuery(query, "update resa set is_active = 0 where start_date < '"+i_current_date.toString("yyyy-MM-dd")+"'");
 }
 
-void Connect_db::deactivate_resa_from_id(int i_resa_nb)
+bool Connect_db::deactivate_resa_from_id(int i_resa_nb)
 {
     QSqlQuery query(this->db);
-
-    runQuery(query, "update resa set is_active = 0 where id_resa = "+ QString::number(i_resa_nb));
+    if (!is_user_connected()) return false;
+    if (!query.exec("update resa set is_active = 0 where id_resa = "+ QString::number(i_resa_nb)+" and is_active = 1")) {
+        qInfo() << query.lastError();
+        return false;
+    }
+    return query.numRowsAffected() > 0;
 }
 
 void Connect_db::deactivate_resa_from_kit(Kit * i_kit)

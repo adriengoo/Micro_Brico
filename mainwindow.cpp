@@ -1960,6 +1960,10 @@ void MainWindow::on_RESA_pushButton_suppr_resa_clicked()
 
         //Retrieve user id
         has_errors = g_connect_db.get_user_by_utinfo(this->ui->RESA_lineEdit_resa_utinfo_user->text(), &l_user);
+        if (has_errors)
+        {
+            return;
+        }
 
         //clear kit list widget
         this->ui->RESA_listWidget_resa_kitsOfResa->clear();
@@ -1968,10 +1972,28 @@ void MainWindow::on_RESA_pushButton_suppr_resa_clicked()
         resa_nb = this->RESA_find_resa_nb_selected(this->ui->RESA_listWidget_resa_currentResa->currentItem());
         if (resa_nb != -1)
         {
-            g_connect_db.deactivate_resa_from_id(resa_nb);
-            this->on_RESA_pushButton_resa_showResa_clicked();
+            std::vector<Kit *> cancelledKits;
+            for (const auto& resa : this->resaList)
+            {
+                if (resa->getId_resa() == resa_nb)
+                {
+                    if (Kit *kit = GESKIT_find_kit_by_id(resa->getId_kit()); kit != nullptr)
+                    {
+                        cancelledKits.push_back(kit);
+                    }
+                }
+            }
 
-            g_connect_db.insert_log_by_user_and_kit(nullptr,&l_user,"L'utilisateur '"+l_user.getUtinfo()+"' a annulé la reservation portant le numéro: "+QString::number(resa_nb));
+            if (g_connect_db.deactivate_resa_from_id(resa_nb))
+            {
+                for (Kit *kit : cancelledKits)
+                {
+                    g_connect_db.insert_log_by_user_and_kit(kit, &l_user,
+                        "L'utilisateur '"+l_user.getUtinfo()+"' a annulé effectivement la réservation n°"
+                        +QString::number(resa_nb)+" du kit '"+kit->getNom()+"' (code: "+kit->getCode()+").");
+                }
+                this->on_RESA_pushButton_resa_showResa_clicked();
+            }
         }
     }
 }

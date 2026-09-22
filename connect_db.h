@@ -80,7 +80,7 @@ public:
     void add_resa_from_kit(Kit *i_p_kit, uint user_id, QDate i_start_date, int i_resa_nb);
     void start_resa();
     void end_resa();
-    void deactivate_resa_from_id(int i_resa_nb);
+    bool deactivate_resa_from_id(int i_resa_nb);
     void deactivate_resa_from_kit(Kit *i_kit);
     void deactivate_resa_prior_to_date(QDate i_current_date);
 
