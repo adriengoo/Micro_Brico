@@ -16,6 +16,8 @@ steps:
 pass_criteria:
   - Condition nécessaire au statut PASS
 automation:
+  status: blocked # automated, alignment_needed ou blocked
   candidate: false
   target: null # Exemple : QtTest ou pytest-qt
+  ctest: null # Nom CTest si automatisée
 notes: null

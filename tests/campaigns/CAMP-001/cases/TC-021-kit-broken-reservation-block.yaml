@@ -26,6 +26,8 @@ pass_criteria:
   - Un kit en panne ne peut pas entrer dans le panier.
   - L'absence d'ajout ne produit aucune donnée persistée.
 automation:
+  status: automated
   candidate: true
   target: QtTest
-notes: "RM-003 est validée. Fixture dédiée et objectName de recherche/panier restent à fournir."
+  ctest: CAMP-001.tc021_broken_kit_not_added_to_reservation_basket
+notes: "Automatisée et validée sur db4qtest."

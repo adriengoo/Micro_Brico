@@ -30,6 +30,8 @@ pass_criteria:
   - Le kit redevient disponible pour la date testée.
   - Une trace d'annulation existe.
 automation:
+  status: automated
   candidate: true
   target: QtTest
-notes: "RM-006 est validée. Fixture SQL réelle (ids, J+7, compteur et texte de log attendu) reste à fournir ; annulation partielle hors périmètre."
+  ctest: CAMP-001.tc031_cancel_reservation_and_restore_availability
+notes: "Automatisée et validée sur db4qtest avec UINFO_031, réservation 31031 et témoin 31032. Annulation partielle hors périmètre."

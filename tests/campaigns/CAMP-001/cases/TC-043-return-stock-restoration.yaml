@@ -1,12 +1,12 @@
 id: TC-043
-title: Restitution d'un kit sorti avec restauration du stock
+title: Restitution complète d'un kit sorti
 priority: P0
-objective: Vérifier qu'une restitution standard, sous session administrateur et identité bénéficiaire, désactive la sortie et restaure le stock.
+objective: Vérifier qu'une restitution complète conserve la quantité totale, remet la quantité sortie à zéro et désactive la sortie.
 requirement: L5 - Restitution, quantités et désactivation de sortie
 preconditions:
   - Application connectée sous TEST_ADMIN.
   - Base de test réinitialisée avec une sortie active dédiée de TEST-K-043 pour UINFO_043.
-  - TEST-K-043 contient TEST_ITEM_043 dont la quantité persistée est 0 après une sortie de 2 unités.
+  - TEST-K-043 contient TEST_ITEM_043 avec quantity=2, quantity_out=2 et quantity_init=2 après une sortie de 2 unités.
   - Le mot de passe valable pour la restitution est disponible conformément au comportement actuel de l'application.
 test_data:
   - "Sortie active dédiée : TEST-K-043 pour UINFO_043"
@@ -17,22 +17,24 @@ steps:
     action: "Étape 1 — Sous session TEST_ADMIN, sélectionner UINFO_043 puis TEST-K-043, saisir le mot de passe fixture de UINFO_043 et le valider."
     expected: L'action de restitution devient disponible.
   - number: 2
-    purpose: Restituer la quantité complète du scénario et déclencher les mises à jour.
+    purpose: Restituer la totalité déclarée sortie, conformément au cas de restitution complète RM-005.
     action: "Étape 2 — Ouvrir PopupSortirResa, sélectionner 2 unités de TEST_ITEM_043 et confirmer avec pushButton_sortir."
     expected: TEST-K-043 ne figure plus parmi les sorties actives de UINFO_043.
   - number: 3
-    purpose: Vérifier désactivation de sortie et trois quantités de l'item.
+    purpose: Vérifier désactivation de sortie et les quantités prévues par RM-005.
     action: "Étape 3 — Contrôler sortie.is_active=0 et TEST_ITEM_043 (quantity=2, quantity_out=0, quantity_init=2)."
-    expected: La sortie dédiée est désactivée et la quantité de TEST_ITEM_043 est restaurée à 2.
+    expected: La sortie dédiée est désactivée ; quantity reste 2, quantity_out revient à 0 et quantity_init reste 2.
   - number: 4
     purpose: Vérifier la traçabilité de la restitution et du mouvement de stock.
     action: "Étape 4 — Consulter les logs du kit et de UINFO_043 liés au numéro de sortie fixture."
     expected: La restitution et l'évolution de quantité sont tracées.
 pass_criteria:
   - La sortie active est désactivée après restitution.
-  - La quantité finale est exactement 2.
+  - La quantité totale reste 2 et quantity_out revient à 0.
   - Les traces de restitution existent.
 automation:
+  status: automated
   candidate: true
   target: QtTest
-notes: "RM-001/RM-002 sont validées. Fixture réelle id_sortie/ids/hashes et scénario séparé de restitution partielle RM-005 restent à créer."
+  ctest: CAMP-001.tc043_return_stock_restoration
+notes: "Automatisé conformément à RM-005 : une restitution complète conserve quantity=2 et ramène quantity_out à 0. Un scénario distinct de restitution partielle reste à créer."

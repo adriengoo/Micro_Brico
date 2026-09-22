@@ -26,6 +26,8 @@ pass_criteria:
   - Aucun accès authentifié n'est accordé avec le mot de passe invalide.
   - L'application reste utilisable après le refus.
 automation:
+  status: automated
   candidate: true
   target: QtTest
+  ctest: CAMP-001.tc002_login_invalid
 notes: "Le token initial et l'accès SQL de lecture sont requis. SHA-1 est hors correction CAMP-001."

@@ -26,6 +26,8 @@ pass_criteria:
   - Le code du kit est unique et le kit est retrouvable.
   - Les items et quantités initiales persistent sans association erronée.
 automation:
+  status: automated
   candidate: true
   target: QtTest
+  ctest: CAMP-001.tc020_create_kit_with_initial_items
 notes: "Modification, duplication, recherche par nom et code dupliqué restent à planifier. ObjectName et fixture complète restent requis."

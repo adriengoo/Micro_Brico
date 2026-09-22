@@ -19,12 +19,14 @@ steps:
     expected: La modification est visible dans la base de test.
   - number: 3
     purpose: Déclencher le contrôle de jeton et observer son effet IHM.
-    action: "Étape 3 — Utiliser l'action d'actualisation identifiée par le socle technique comme appelant is_user_connected."
+    action: "Étape 3 — Cliquer RESA_pushButton_resa_showResa, action qui appelle is_user_connected via le rafraîchissement de réservation."
     expected: L'application détecte la session invalide, repasse à l'état déconnecté et désactive les actions protégées.
 pass_criteria:
   - Une session dont le jeton ne correspond plus ne conserve pas l'accès aux actions protégées.
   - L'application ne ferme pas brutalement.
 automation:
+  status: automated
   candidate: false
-  target: null
-notes: "Bloquant : l'action IHM appelant réellement is_user_connected n'est pas cartographiée. Aucun scénario multi-instance n'est couvert."
+  target: QtTest
+  ctest: CAMP-001.tc003_session_invalidated_by_reservation_refresh
+notes: "Automatisée et validée sur db4qtest. Aucun scénario multi-instance n'est couvert."

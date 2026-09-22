@@ -25,6 +25,8 @@ pass_criteria:
   - L'utilisateur créé est retrouvé par les deux recherches.
   - Les données affichées et persistées concordent.
 automation:
+  status: automated
   candidate: true
   target: QtTest
+  ctest: CAMP-001.tc010_create_and_find_user
 notes: "RM-002 est validée. Restent à fournir : tous les champs fixture, les objectName et les valeurs SQL attendues."

@@ -28,6 +28,8 @@ pass_criteria:
   - La signature administrateur est traçable.
   - La réservation source reste active après la sortie.
 automation:
+  status: automated
   candidate: true
   target: QtTest
-notes: "RM-002 est validée. Fixture déterministe, compteurs et état attendu de la resa source restent à fournir."
+  ctest: CAMP-001.tc042_output_with_admin_signature_keeps_recipient
+notes: "Automatisée et validée sur db4qtest avec fixture UINFO_042 ; la réservation source reste active."

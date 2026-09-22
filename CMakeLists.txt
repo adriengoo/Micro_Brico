@@ -166,7 +166,9 @@ if(MICROBRICO_BUILD_TESTS)
             tc021_broken_kit_not_added_to_reservation_basket
             tc031_cancel_reservation_and_restore_availability
             tc040_output_requires_recipient_password
-            tc042_output_with_admin_signature_keeps_recipient)
+            tc041_output_user_signature_stock
+            tc042_output_with_admin_signature_keeps_recipient
+            tc043_return_stock_restoration)
         add_test(NAME CAMP-001.${CAMP001_CASE}
                  COMMAND micro_brico_campaign_cases ${CAMP001_CASE})
         set_tests_properties(CAMP-001.${CAMP001_CASE} PROPERTIES

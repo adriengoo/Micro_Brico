@@ -33,6 +33,8 @@ pass_criteria:
   - Le kit apparaît réservé pour TEST_DATE_030.
   - Une trace liée à l'utilisateur et au kit existe.
 automation:
+  status: blocked
   candidate: true
-  target: QtTest
-notes: "RM-001 est validée. Fixture déterministe requise : ids, hash, adhesion_payed, compteur uid_resa et convention de sélection du numéro généré."
+  target: null
+  ctest: null
+notes: "Bloquée : UINFO_030 est compatible et la fixture est possible, mais l'IHM de réservation ne permet que le vendredi alors que la fiche demande J+7. Une décision de règle de date est requise."

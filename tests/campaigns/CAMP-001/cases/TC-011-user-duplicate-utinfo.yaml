@@ -25,6 +25,8 @@ pass_criteria:
   - La base ne contient qu'un utilisateur avec TEST_U_011.
   - L'opérateur reçoit un retour exploitable sur l'échec.
 automation:
+  status: automated
   candidate: true
   target: QtTest
+  ctest: CAMP-001.tc011_duplicate_utinfo_rejected
 notes: "Fixture complète, valeur initiale des logs et convention de contrôle SQL restent à fournir."

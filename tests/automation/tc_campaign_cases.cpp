@@ -38,11 +38,15 @@ constexpr auto kAdminUtinfo = "TEST_ADMIN";
 constexpr auto kUser010 = "TEST_U_010";
 constexpr auto kUser011 = "TEST_U_011";
 constexpr auto kUser031 = "UINFO_031";
+constexpr auto kUser041 = "UINFO_041";
+constexpr auto kUser043 = "UINFO_043";
 constexpr auto kKit021 = "TEST-K-021";
 constexpr auto kKit020 = "TEST-K-020";
 constexpr auto kKit003 = "TEST-K-003";
 constexpr auto kKit031 = "TEST-K-031";
 constexpr auto kKit031Witness = "TEST-K-31W";
+constexpr auto kKit041 = "TEST-K-041";
+constexpr auto kKit043 = "TEST-K-043";
 constexpr auto kItem020A = "TEST_ITEM_A";
 constexpr auto kItem020B = "TEST_ITEM_B";
 constexpr auto kUser040 = "UINFO_040";
@@ -51,6 +55,8 @@ constexpr auto kKit040 = "TEST-K-040";
 constexpr auto kKit042 = "TEST-K-042";
 constexpr auto kItem040 = "TEST_ITEM_040";
 constexpr auto kItem042 = "TEST_ITEM_042";
+constexpr auto kItem041 = "TEST_ITEM_041";
+constexpr auto kItem043 = "TEST_ITEM_043";
 constexpr auto kUserPassword = "camp001-synthetic-user-password";
 
 bool run(QSqlQuery &query, const QString &context)
@@ -129,6 +135,7 @@ public:
     bool insertKit(const QString &code, const QString &name, bool broken, int *id = nullptr);
     bool insertItem(const QString &kitCode, const QString &name, int quantity);
     bool insertReservation(const QString &utinfo, const QString &kitCode, const QDate &date, int reservationNumber);
+    bool insertCheckout(const QString &utinfo, const QString &kitCode, const QDate &date, int checkoutNumber);
     int scalar(const QString &sql, const QVariantList &values = {}) const;
     QString value(const QString &sql, const QVariantList &values = {}) const;
 };
@@ -223,6 +230,20 @@ bool CampaignFixture::insertReservation(const QString &utinfo, const QString &ki
     return run(query, QStringLiteral("Insert fixture reservation %1").arg(reservationNumber));
 }
 
+bool CampaignFixture::insertCheckout(const QString &utinfo, const QString &kitCode, const QDate &date, int checkoutNumber)
+{
+    QSqlQuery query(database);
+    query.prepare(QStringLiteral(
+        "INSERT INTO sortie (start_date, id_user, id_kit, id_sortie, is_active) "
+        "SELECT ?, u.id, k.idkit, ?, 1 FROM utilisateur u CROSS JOIN kit k "
+        "WHERE u.utinfo=? AND k.code_kit=?"));
+    query.addBindValue(date);
+    query.addBindValue(checkoutNumber);
+    query.addBindValue(utinfo);
+    query.addBindValue(kitCode);
+    return run(query, QStringLiteral("Insert fixture checkout %1").arg(checkoutNumber));
+}
+
 int CampaignFixture::scalar(const QString &sql, const QVariantList &values) const
 {
     QSqlQuery query(database);
@@ -256,7 +277,9 @@ private slots:
     void tc021_broken_kit_not_added_to_reservation_basket();
     void tc031_cancel_reservation_and_restore_availability();
     void tc040_output_requires_recipient_password();
+    void tc041_output_user_signature_stock();
     void tc042_output_with_admin_signature_keeps_recipient();
+    void tc043_return_stock_restoration();
     void cleanup();
     void cleanupTestCase();
 
@@ -268,6 +291,7 @@ private:
                         const QString &firstName, const QString &email, const QString &password);
     bool selectOutputReservation(MainWindow *window, const QString &utinfo, const QString &kitCode);
     bool validateOutputPassword(MainWindow *window, const QString &password, bool administratorSignature);
+    bool validateReturnPassword(MainWindow *window, const QString &password);
     bool verifyPopupItemAndSubmit(int quantity);
 };
 
@@ -380,6 +404,18 @@ bool CampaignCases::validateOutputPassword(MainWindow *window, const QString &pa
     scheduleMessageBoxButton(QMessageBox::Ok);
     QTest::mouseClick(validate, Qt::LeftButton);
     return waitFor([checkout] { return checkout->isEnabled(); });
+}
+
+bool CampaignCases::validateReturnPassword(MainWindow *window, const QString &password)
+{
+    auto *passwordField = window->findChild<QLineEdit *>(QStringLiteral("SORTIE_lineEdit_resa_mdp"));
+    auto *validate = window->findChild<QPushButton *>(QStringLiteral("SORTIE_pushButton_validate_mdp_sortie"));
+    auto *returnKit = window->findChild<QPushButton *>(QStringLiteral("pushButton_restituerKit"));
+    if (!passwordField || !validate || !returnKit) return false;
+    passwordField->setText(password);
+    scheduleMessageBoxButton(QMessageBox::Ok);
+    QTest::mouseClick(validate, Qt::LeftButton);
+    return waitFor([returnKit] { return returnKit->isEnabled(); });
 }
 
 bool CampaignCases::verifyPopupItemAndSubmit(int quantity)
@@ -763,6 +799,60 @@ void CampaignCases::tc040_output_requires_recipient_password()
                              {QString::fromLatin1(kKit040), QString::fromLatin1(kItem040)}), 0);
 }
 
+void CampaignCases::tc041_output_user_signature_stock()
+{
+    const QDate date = plusSevenDays();
+    QVERIFY(fixture.insertUser(QString::fromLatin1(kUser041), QStringLiteral("Output"), QStringLiteral("Standard"), QString::fromLatin1(kUserPassword)));
+    QVERIFY(fixture.insertKit(QString::fromLatin1(kKit041), QStringLiteral("Kit sortie 041"), false));
+    QVERIFY(fixture.insertItem(QString::fromLatin1(kKit041), QString::fromLatin1(kItem041), 2));
+    QVERIFY(fixture.insertReservation(QString::fromLatin1(kUser041), QString::fromLatin1(kKit041), date, 41041));
+    auto *window = newLoggedInWindow();
+    QVERIFY(window);
+
+    // TC-041 — Étape 1 : identifier le bénéficiaire et valider son mot de passe sous session administrateur.
+    QVERIFY(selectOutputReservation(window, QString::fromLatin1(kUser041), QString::fromLatin1(kKit041)));
+    QVERIFY(validateOutputPassword(window, QString::fromLatin1(kUserPassword), false));
+
+    // TC-041 — Étape 2 : confirmer la sortie conforme des deux unités du kit.
+    auto *checkout = window->findChild<QPushButton *>(QStringLiteral("SORTIE_pushButton_sortir"));
+    QVERIFY(checkout && checkout->isEnabled());
+    QTest::mouseClick(checkout, Qt::LeftButton);
+    QVERIFY(verifyPopupItemAndSubmit(2));
+
+    // TC-041 — Étape 3 : vérifier la sortie, la réservation source et les quantités RM-005.
+    QCOMPARE(fixture.scalar(QStringLiteral(
+                 "SELECT COUNT(*) FROM sortie s JOIN utilisateur u ON s.id_user=u.id "
+                 "JOIN kit k ON s.id_kit=k.idkit WHERE u.utinfo=? AND k.code_kit=? AND s.is_active=1"),
+                 {QString::fromLatin1(kUser041), QString::fromLatin1(kKit041)}), 1);
+    QCOMPARE(fixture.scalar(QStringLiteral("SELECT is_active FROM resa WHERE id_resa=41041")), 1);
+    QCOMPARE(fixture.scalar(QStringLiteral("SELECT quantity FROM item i JOIN kit k ON i.forkey=k.idkit WHERE k.code_kit=? AND i.name=?"),
+                             {QString::fromLatin1(kKit041), QString::fromLatin1(kItem041)}), 2);
+    QCOMPARE(fixture.scalar(QStringLiteral("SELECT quantity_out FROM item i JOIN kit k ON i.forkey=k.idkit WHERE k.code_kit=? AND i.name=?"),
+                             {QString::fromLatin1(kKit041), QString::fromLatin1(kItem041)}), 2);
+    QCOMPARE(fixture.scalar(QStringLiteral("SELECT quantity_init FROM item i JOIN kit k ON i.forkey=k.idkit WHERE k.code_kit=? AND i.name=?"),
+                             {QString::fromLatin1(kKit041), QString::fromLatin1(kItem041)}), 2);
+
+    // TC-041 — Étape 4 : contrôler la traçabilité de sortie sans signature administrateur forcée.
+    const int checkoutNumber = fixture.scalar(QStringLiteral(
+        "SELECT s.id_sortie FROM sortie s JOIN utilisateur u ON s.id_user=u.id "
+        "JOIN kit k ON s.id_kit=k.idkit WHERE u.utinfo=? AND k.code_kit=? AND s.is_active=1"),
+        {QString::fromLatin1(kUser041), QString::fromLatin1(kKit041)});
+    QVERIFY(checkoutNumber > 0);
+    QCOMPARE(fixture.scalar(QStringLiteral(
+                 "SELECT COUNT(*) FROM log l JOIN utilisateur u ON l.id_user=u.id "
+                 "JOIN kit k ON l.id_kit=k.idkit WHERE u.utinfo=? AND k.code_kit=? AND l.text LIKE ?"),
+                 {QString::fromLatin1(kUser041), QString::fromLatin1(kKit041),
+                  QStringLiteral("%n° de sortie: %1%").arg(checkoutNumber)} ), 1);
+    QVERIFY(fixture.scalar(QStringLiteral(
+                 "SELECT COUNT(*) FROM log l JOIN kit k ON l.id_kit=k.idkit "
+                 "WHERE k.code_kit=? AND l.text LIKE ?"),
+                 {QString::fromLatin1(kKit041), QStringLiteral("%Nouvelle quantités de chaque items%")} ) >= 1);
+    QCOMPARE(fixture.scalar(QStringLiteral(
+                 "SELECT COUNT(*) FROM log l JOIN kit k ON l.id_kit=k.idkit "
+                 "WHERE k.code_kit=? AND l.text LIKE ?"),
+                 {QString::fromLatin1(kKit041), QStringLiteral("%signée par l'administrateur%")} ), 0);
+}
+
 void CampaignCases::tc042_output_with_admin_signature_keeps_recipient()
 {
     const QDate date = plusSevenDays();
@@ -790,6 +880,62 @@ void CampaignCases::tc042_output_with_admin_signature_keeps_recipient()
                              {QString::fromLatin1(kKit042)}), 1);
     QVERIFY(fixture.scalar(QStringLiteral("SELECT COUNT(*) FROM log l JOIN kit k ON l.id_kit=k.idkit WHERE k.code_kit=? AND l.text LIKE ?"),
                             {QString::fromLatin1(kKit042), QStringLiteral("%signée par l'administrateur 'TEST_ADMIN'%")}) >= 1);
+}
+
+void CampaignCases::tc043_return_stock_restoration()
+{
+    const QDate date = plusSevenDays();
+    QVERIFY(fixture.insertUser(QString::fromLatin1(kUser043), QStringLiteral("Return"), QStringLiteral("Complete"), QString::fromLatin1(kUserPassword)));
+    QVERIFY(fixture.insertKit(QString::fromLatin1(kKit043), QStringLiteral("Kit restitution 043"), false));
+    QVERIFY(fixture.insertItem(QString::fromLatin1(kKit043), QString::fromLatin1(kItem043), 2));
+    QVERIFY(fixture.insertCheckout(QString::fromLatin1(kUser043), QString::fromLatin1(kKit043), date, 43043));
+    QSqlQuery setup(fixture.database);
+    setup.prepare(QStringLiteral(
+        "UPDATE item i JOIN kit k ON i.forkey=k.idkit SET i.quantity=2, i.quantity_init=2, i.quantity_out=2 "
+        "WHERE k.code_kit=? AND i.name=?"));
+    setup.addBindValue(QString::fromLatin1(kKit043));
+    setup.addBindValue(QString::fromLatin1(kItem043));
+    QVERIFY(run(setup, QStringLiteral("Set TC-043 checkout item quantities")));
+    auto *window = newLoggedInWindow();
+    QVERIFY(window);
+    auto *user = window->findChild<QLineEdit *>(QStringLiteral("SORTIE_lineEdit_utinfo"));
+    auto *show = window->findChild<QPushButton *>(QStringLiteral("SORTIE_pushButton_resa_showResa"));
+    auto *kitsOut = window->findChild<QListWidget *>(QStringLiteral("SORTIE_listWidget_kitsOut"));
+    auto *returnKit = window->findChild<QPushButton *>(QStringLiteral("pushButton_restituerKit"));
+    QVERIFY(user && show && kitsOut && returnKit);
+
+    // TC-043 — Étape 1 : identifier le bénéficiaire, sélectionner le kit sorti et valider son mot de passe.
+    user->setText(QString::fromLatin1(kUser043));
+    QTest::mouseClick(show, Qt::LeftButton);
+    QTRY_COMPARE(kitsOut->count(), 1);
+    QVERIFY(kitsOut->item(0)->text().contains(QString::fromLatin1(kKit043)));
+    QTest::mouseClick(kitsOut->viewport(), Qt::LeftButton, Qt::NoModifier,
+                      kitsOut->visualItemRect(kitsOut->item(0)).center());
+    QVERIFY(validateReturnPassword(window, QString::fromLatin1(kUserPassword)));
+
+    // TC-043 — Étape 2 : restituer les deux unités effectivement sorties.
+    QVERIFY(returnKit->isEnabled());
+    QTest::mouseClick(returnKit, Qt::LeftButton);
+    QVERIFY(verifyPopupItemAndSubmit(2));
+
+    // TC-043 — Étape 3 : vérifier la désactivation de sortie et les quantités RM-005.
+    QCOMPARE(fixture.scalar(QStringLiteral("SELECT is_active FROM sortie WHERE id_sortie=43043")), 0);
+    QCOMPARE(fixture.scalar(QStringLiteral("SELECT quantity FROM item i JOIN kit k ON i.forkey=k.idkit WHERE k.code_kit=? AND i.name=?"),
+                             {QString::fromLatin1(kKit043), QString::fromLatin1(kItem043)}), 2);
+    QCOMPARE(fixture.scalar(QStringLiteral("SELECT quantity_out FROM item i JOIN kit k ON i.forkey=k.idkit WHERE k.code_kit=? AND i.name=?"),
+                             {QString::fromLatin1(kKit043), QString::fromLatin1(kItem043)}), 0);
+    QCOMPARE(fixture.scalar(QStringLiteral("SELECT quantity_init FROM item i JOIN kit k ON i.forkey=k.idkit WHERE k.code_kit=? AND i.name=?"),
+                             {QString::fromLatin1(kKit043), QString::fromLatin1(kItem043)}), 2);
+
+    // TC-043 — Étape 4 : contrôler les traces de restitution et de quantités du kit retourné.
+    QCOMPARE(fixture.scalar(QStringLiteral(
+                 "SELECT COUNT(*) FROM log l JOIN utilisateur u ON l.id_user=u.id "
+                 "JOIN kit k ON l.id_kit=k.idkit WHERE u.utinfo=? AND k.code_kit=? AND l.text LIKE ?"),
+                 {QString::fromLatin1(kUser043), QString::fromLatin1(kKit043), QStringLiteral("%a restitué le kit%")} ), 1);
+    QVERIFY(fixture.scalar(QStringLiteral(
+                 "SELECT COUNT(*) FROM log l JOIN kit k ON l.id_kit=k.idkit "
+                 "WHERE k.code_kit=? AND l.text LIKE ?"),
+                 {QString::fromLatin1(kKit043), QStringLiteral("%Nouvelle quantités de chaque items%")} ) >= 1);
 }
 
 int main(int argc, char *argv[])
