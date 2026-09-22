@@ -39,6 +39,7 @@ constexpr auto kUser010 = "TEST_U_010";
 constexpr auto kUser011 = "TEST_U_011";
 constexpr auto kKit021 = "TEST-K-021";
 constexpr auto kKit020 = "TEST-K-020";
+constexpr auto kKit003 = "TEST-K-003";
 constexpr auto kItem020A = "TEST_ITEM_A";
 constexpr auto kItem020B = "TEST_ITEM_B";
 constexpr auto kUser040 = "UINFO_040";
@@ -148,7 +149,7 @@ bool CampaignFixture::open()
 bool CampaignFixture::reset()
 {
     const QString userList = "'TEST_ADMIN','TEST_U_010','TEST_U_011','UINFO_030','UINFO_031','UINFO_040','UINFO_041','UINFO_042','UINFO_043'";
-    const QString kitList = "'TEST-K-020','TEST-K-021','TEST-K-030','TEST-K-031','TEST-K-040','TEST-K-041','TEST-K-042','TEST-K-043'";
+    const QString kitList = "'TEST-K-003','TEST-K-020','TEST-K-021','TEST-K-030','TEST-K-031','TEST-K-040','TEST-K-041','TEST-K-042','TEST-K-043'";
     QSqlQuery query(database);
 
     if (!runSql(query, "DELETE l FROM log l LEFT JOIN utilisateur u ON l.id_user=u.id LEFT JOIN kit k ON l.id_kit=k.idkit "
@@ -245,6 +246,7 @@ private slots:
     void initTestCase();
     void init();
     void tc002_login_invalid();
+    void tc003_session_invalidated_by_reservation_refresh();
     void tc010_create_and_find_user();
     void tc011_duplicate_utinfo_rejected();
     void tc020_create_kit_with_initial_items();
@@ -424,6 +426,64 @@ void CampaignCases::tc002_login_invalid()
     QVERIFY(!logoutAction->isEnabled());
     // TC-002 — Étape 3 : vérifier l'absence d'effet persistant sur le jeton.
     QCOMPARE(fixture.value(QStringLiteral("SELECT token FROM utilisateur WHERE utinfo=?"), {QString::fromLatin1(kAdminUtinfo)}), initialToken);
+}
+
+void CampaignCases::tc003_session_invalidated_by_reservation_refresh()
+{
+    QVERIFY(fixture.insertKit(QString::fromLatin1(kKit003), QStringLiteral("Kit session 003"), false));
+    auto *window = newLoggedInWindow();
+    QVERIFY(window);
+    auto *calendar = window->findChild<QCalendarWidget *>(QStringLiteral("RESA_calendarWidget"));
+    auto *reserve = window->findChild<QPushButton *>(QStringLiteral("RESA_pushButton_reserver"));
+    auto *user = window->findChild<QLineEdit *>(QStringLiteral("RESA_lineEdit_resa_utinfo_user"));
+    auto *refreshReservations = window->findChild<QPushButton *>(QStringLiteral("RESA_pushButton_resa_showResa"));
+    auto *findKit = window->findChild<QLineEdit *>(QStringLiteral("RESA_lineEdit_findkitbycode"));
+    auto *findKitButton = window->findChild<QPushButton *>(QStringLiteral("RESA_pushButton_getkit_resa"));
+    auto *availableKits = window->findChild<QListWidget *>(QStringLiteral("RESA_listWidget_resa"));
+    auto *basket = window->findChild<QListWidget *>(QStringLiteral("RESA_listWidget_panierResa"));
+    auto *loginAction = window->findChild<QAction *>(QStringLiteral("actionSe_connecter"));
+    auto *logoutAction = window->findChild<QAction *>(QStringLiteral("actionSe_d_connecter"));
+    auto *addKitAction = window->findChild<QAction *>(QStringLiteral("actionajouter_nouveau_kit"));
+    QVERIFY(calendar && reserve && user && refreshReservations && findKit && findKitButton && availableKits && basket && loginAction && logoutAction && addKitAction);
+
+    // TC-003 — Étape 1 : établir une session administrateur avec réservation disponible.
+    const QDate date = nextFriday();
+    calendar->setSelectedDate(date);
+    QMetaObject::invokeMethod(window, "on_RESA_calendarWidget_clicked", Q_ARG(QDate, date));
+    findKit->setText(QString::fromLatin1(kKit003));
+    QTest::mouseClick(findKitButton, Qt::LeftButton);
+    QTRY_COMPARE(availableKits->count(), 1);
+    availableKits->setCurrentRow(0);
+    QVERIFY(QMetaObject::invokeMethod(window, "on_RESA_listWidget_resa_itemDoubleClicked",
+                                      Q_ARG(QListWidgetItem *, availableKits->item(0))));
+    QTRY_COMPARE(basket->count(), 1);
+    QTRY_VERIFY(reserve->isEnabled());
+    QVERIFY(logoutAction->isEnabled());
+    QVERIFY(!loginAction->isEnabled());
+
+    // TC-003 — Étape 2 : invalider uniquement le jeton serveur de TEST_ADMIN.
+    QSqlQuery query(fixture.database);
+    query.prepare(QStringLiteral("UPDATE utilisateur SET token=? WHERE utinfo=?"));
+    query.addBindValue(QStringLiteral("TC003_INVALIDATED_TOKEN"));
+    query.addBindValue(QString::fromLatin1(kAdminUtinfo));
+    QVERIFY(run(query, QStringLiteral("Invalidate TC-003 fixture token")));
+    QCOMPARE(fixture.value(QStringLiteral("SELECT token FROM utilisateur WHERE utinfo=?"), {QString::fromLatin1(kAdminUtinfo)}),
+             QStringLiteral("TC003_INVALIDATED_TOKEN"));
+
+    // TC-003 — Étape 3 : actualiser les réservations, appelant get_user_by_utinfo puis is_user_connected.
+    user->setText(QString::fromLatin1(kAdminUtinfo));
+    QTest::mouseClick(refreshReservations, Qt::LeftButton);
+    QTRY_VERIFY(loginAction->isEnabled());
+    QTRY_VERIFY(!logoutAction->isEnabled());
+    QVERIFY(!reserve->isEnabled());
+    QVERIFY(!addKitAction->isEnabled());
+    QVERIFY(window->isVisible());
+    QCOMPARE(fixture.value(QStringLiteral("SELECT token FROM utilisateur WHERE utinfo=?"), {QString::fromLatin1(kAdminUtinfo)}),
+             QStringLiteral("TC003_INVALIDATED_TOKEN"));
+    QCOMPARE(fixture.scalar(QStringLiteral("SELECT COUNT(*) FROM resa r JOIN utilisateur u ON r.id_user=u.id WHERE u.utinfo=? AND r.is_active=1"),
+                             {QString::fromLatin1(kAdminUtinfo)}), 0);
+    QCOMPARE(fixture.scalar(QStringLiteral("SELECT COUNT(*) FROM sortie s JOIN utilisateur u ON s.id_user=u.id WHERE u.utinfo=? AND s.is_active=1"),
+                             {QString::fromLatin1(kAdminUtinfo)}), 0);
 }
 
 void CampaignCases::tc010_create_and_find_user()

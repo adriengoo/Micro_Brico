@@ -159,6 +159,7 @@ if(MICROBRICO_BUILD_TESTS)
 
     foreach(CAMP001_CASE
             tc002_login_invalid
+            tc003_session_invalidated_by_reservation_refresh
             tc010_create_and_find_user
             tc011_duplicate_utinfo_rejected
             tc020_create_kit_with_initial_items

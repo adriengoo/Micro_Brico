@@ -1,6 +1,6 @@
 # État de l'automatisation — CAMP-001
 
-Statut au 2026-09-22 : 8 fiches sur 13 sont automatisées et validées. Les 5 autres sont explicitement en attente : aucun verdict PASS n'est simulé.
+Statut au 2026-09-22 : 9 fiches sur 13 sont automatisées et validées. Les 4 autres sont explicitement en attente : aucun verdict PASS n'est simulé.
 
 ## Exécution validée
 
@@ -10,12 +10,13 @@ La commande suivante a été exécutée dans un environnement où les variables 
 & 'C:\Qt\Tools\CMake_64\bin\ctest.exe' --test-dir build/Desktop_Qt_6_11_2_MinGW_64_bit_Debug --output-on-failure -R '^CAMP-001\.'
 ```
 
-Résultat : **9 contrôles CTest passés sur 9** (le garde-fou sans SQL, puis TC-001 et les 7 cas ci-dessous). Les cas IHM sont marqués `RUN_SERIAL` et lancés dans un processus distinct, afin de préserver l'isolation malgré le défaut de fermeture existant de `MainWindow`.
+Résultat : **10 contrôles CTest passés sur 10** (le garde-fou sans SQL, puis TC-001 et les 8 cas ci-dessous). Les cas IHM sont marqués `RUN_SERIAL` et lancés dans un processus distinct, afin de préserver l'isolation malgré le défaut de fermeture existant de `MainWindow`.
 
 | Fiche | Statut | Couverture automatisée réelle |
 | --- | --- | --- |
 | TC-001 | PASS | Connexion administrateur, session IHM et garde-fou de configuration. |
 | TC-002 | PASS | Mot de passe invalide : accès non accordé et jeton inchangé. |
+| TC-003 | PASS | Jeton invalidé via fixture, puis action IHM `RESA_pushButton_resa_showResa` : retour à l'état déconnecté et accès protégés retirés. |
 | TC-010 | PASS | Création avec caution/adhésion, recherche par utinfo puis nom, persistance de l'e-mail. |
 | TC-011 | PASS | Utinfo déjà existant : aucune ligne, e-mail ou log parasite créé. |
 | TC-020 | PASS | Création du kit, affichage de ses deux items, recherche par code et contrôle des trois quantités persistées. |
@@ -27,13 +28,12 @@ Résultat : **9 contrôles CTest passés sur 9** (le garde-fou sans SQL, puis TC
 
 Le pilote [`tc_campaign_cases.cpp`](../../automation/tc_campaign_cases.cpp) ouvre une connexion QMYSQL nommée `camp001_cases_fixture_db4qtest`, dont la configuration refuse tout nom de base autre que `db4qtest`. L'application sous test reçoit séparément `microbrico_test_db4qtest`.
 
-Chaque cas crée seulement des données synthétiques nommées, puis les supprime dans `cleanup`, y compris après un échec Qt Test : utilisateurs `TEST_ADMIN`, `TEST_U_010`, `TEST_U_011`, `UINFO_040`, `UINFO_042`, kits `TEST-K-020`, `TEST-K-021`, `TEST-K-040`, `TEST-K-042`, leurs items, réservations, sorties et logs liés. Aucun accès à `dbtest` n'est effectué. Les mots de passe administrateur proviennent des variables d'environnement et ne sont pas versionnés.
+Chaque cas crée seulement des données synthétiques nommées, puis les supprime dans `cleanup`, y compris après un échec Qt Test : utilisateurs `TEST_ADMIN`, `TEST_U_010`, `TEST_U_011`, `UINFO_040`, `UINFO_042`, kits `TEST-K-003`, `TEST-K-020`, `TEST-K-021`, `TEST-K-040`, `TEST-K-042`, leurs items, réservations, sorties et logs liés. Aucun accès à `dbtest` n'est effectué. Les mots de passe administrateur proviennent des variables d'environnement et ne sont pas versionnés.
 
 ## Fiches laissées en attente
 
 | Fiche | Obstacle vérifié |
 | --- | --- |
-| TC-003 | La fiche n'identifie toujours ni l'action IHM qui doit contrôler le jeton invalidé, ni le résultat déterministe associé ; elle est elle-même marquée `candidate: false`. |
 | TC-030 | L'utinfo de fixture est désormais compatible (`UINFO_030`), mais la fiche demande J+7 alors que le calendrier de réservation ne permet que le vendredi. |
 | TC-031 | La fixture annoncée ne fournit pas l'utilisateur ni les valeurs persistées nécessaires à une réservation réelle `id_resa=31031`. De plus, l'annulation actuelle ne produit pas une trace associant à la fois l'utilisateur et le kit, pourtant exigée. |
 | TC-041 | Un parcours IHM complet a été exécuté : sortie créée, réservation encore active et `quantity_out=2`, mais `item.quantity` reste à 2 au lieu de 0. `Connect_db::update_items_quantity_of_kit()` persiste la quantité courante de l'item de popup sans la diminuer. La fiche reste en attente de correction produit. |
