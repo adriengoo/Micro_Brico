@@ -1,28 +1,28 @@
 id: TC-041
 title: Sortie signée par l'utilisateur avec mise à jour du stock
 priority: P0
-objective: Vérifier une sortie standard validée dans la session administrateur par les identifiants du bénéficiaire et son effet sur le stock.
+objective: Vérifier une sortie standard validée dans la session administrateur par les identifiants du bénéficiaire, son effet sur le stock et le maintien de la réservation source active.
 requirement: L5 - Sortie planifiée, quantités et traçabilité
 preconditions:
   - Application connectée sous TEST_ADMIN.
-  - Base de test réinitialisée avec TEST_USER_041, son mot de passe connu, et une réservation active pour le seul kit TEST-K-041.
+  - Base de test réinitialisée avec UINFO_041, son mot de passe connu, et une réservation active pour le seul kit TEST-K-041.
   - TEST-K-041 contient TEST_ITEM_041 avec quantité 2.
 test_data:
-  - "Sortie de TEST-K-041 pour TEST_USER_041"
+  - "Sortie de TEST-K-041 pour UINFO_041"
   - "Quantité remise : 2 unités de TEST_ITEM_041"
 steps:
   - number: 1
     purpose: Vérifier l'identification standard du bénéficiaire sous session administrateur (RM-002).
-    action: "Étape 1 — Sous session TEST_ADMIN, sélectionner TEST_USER_041 et TEST-K-041, saisir le mot de passe fixture de TEST_USER_041 et le valider."
+    action: "Étape 1 — Sous session TEST_ADMIN, sélectionner UINFO_041 et TEST-K-041, saisir le mot de passe fixture de UINFO_041 et le valider."
     expected: Le statut confirme le mot de passe valide et autorise la sortie.
   - number: 2
     purpose: Créer la sortie et le mouvement de quantité attendu.
     action: "Étape 2 — Dans PopupSortirResa, confirmer la sortie de 2 unités de TEST_ITEM_041 avec pushButton_sortir."
-    expected: La sortie est confirmée et TEST-K-041 apparaît comme sorti pour TEST_USER_041.
+    expected: La sortie est confirmée et TEST-K-041 apparaît comme sorti pour UINFO_041.
   - number: 3
-    purpose: Vérifier précisément sortie, stock et réservation source.
-    action: "Étape 3 — Contrôler sortie active, resa source, et la ligne item TEST_ITEM_041 (quantity=0, quantity_out=2, quantity_init=2)."
-    expected: Une sortie active dédiée existe pour TEST-K-041 et TEST_USER_041 ; la quantité persistée de TEST_ITEM_041 est 0.
+    purpose: Vérifier précisément la sortie, le stock et la conservation de la réservation source.
+    action: "Étape 3 — Contrôler la sortie active, la resa source et la ligne item TEST_ITEM_041 (quantity=0, quantity_out=2, quantity_init=2)."
+    expected: Une sortie active dédiée existe pour TEST-K-041 et UINFO_041 ; TEST_ITEM_041 a quantity=0, quantity_out=2 et quantity_init=2 ; la réservation source conserve is_active=1.
   - number: 4
     purpose: Vérifier une trace de sortie non signée par délégation administrateur.
     action: "Étape 4 — Consulter les logs utilisateur et kit du numéro de sortie créé."
@@ -30,6 +30,7 @@ steps:
 pass_criteria:
   - La sortie active, l'utilisateur et le kit sont cohérents.
   - Le stock passe de 2 à 0 exactement une fois.
+  - La réservation source reste active après la sortie.
   - Les logs permettent d'identifier la sortie et la mise à jour du stock.
 automation:
   candidate: true

@@ -5,28 +5,28 @@ objective: Vérifier qu'une restitution standard, sous session administrateur et
 requirement: L5 - Restitution, quantités et désactivation de sortie
 preconditions:
   - Application connectée sous TEST_ADMIN.
-  - Base de test réinitialisée avec une sortie active dédiée de TEST-K-043 pour TEST_USER_043.
+  - Base de test réinitialisée avec une sortie active dédiée de TEST-K-043 pour UINFO_043.
   - TEST-K-043 contient TEST_ITEM_043 dont la quantité persistée est 0 après une sortie de 2 unités.
   - Le mot de passe valable pour la restitution est disponible conformément au comportement actuel de l'application.
 test_data:
-  - "Sortie active dédiée : TEST-K-043 pour TEST_USER_043"
+  - "Sortie active dédiée : TEST-K-043 pour UINFO_043"
   - "Item : TEST_ITEM_043 ; quantité à restituer 2"
 steps:
   - number: 1
     purpose: Vérifier l'identification requise pour restituer (RM-002).
-    action: "Étape 1 — Sous session TEST_ADMIN, sélectionner TEST_USER_043 puis TEST-K-043, saisir le mot de passe fixture de TEST_USER_043 et le valider."
+    action: "Étape 1 — Sous session TEST_ADMIN, sélectionner UINFO_043 puis TEST-K-043, saisir le mot de passe fixture de UINFO_043 et le valider."
     expected: L'action de restitution devient disponible.
   - number: 2
     purpose: Restituer la quantité complète du scénario et déclencher les mises à jour.
     action: "Étape 2 — Ouvrir PopupSortirResa, sélectionner 2 unités de TEST_ITEM_043 et confirmer avec pushButton_sortir."
-    expected: TEST-K-043 ne figure plus parmi les sorties actives de TEST_USER_043.
+    expected: TEST-K-043 ne figure plus parmi les sorties actives de UINFO_043.
   - number: 3
     purpose: Vérifier désactivation de sortie et trois quantités de l'item.
     action: "Étape 3 — Contrôler sortie.is_active=0 et TEST_ITEM_043 (quantity=2, quantity_out=0, quantity_init=2)."
     expected: La sortie dédiée est désactivée et la quantité de TEST_ITEM_043 est restaurée à 2.
   - number: 4
     purpose: Vérifier la traçabilité de la restitution et du mouvement de stock.
-    action: "Étape 4 — Consulter les logs du kit et de TEST_USER_043 liés au numéro de sortie fixture."
+    action: "Étape 4 — Consulter les logs du kit et de UINFO_043 liés au numéro de sortie fixture."
     expected: La restitution et l'évolution de quantité sont tracées.
 pass_criteria:
   - La sortie active est désactivée après restitution.

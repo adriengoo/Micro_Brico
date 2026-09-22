@@ -218,7 +218,7 @@ Kit::Kit(QObject *parent)
 {}
 
 
-Kit::Kit(int idkit, const QString &nom, const QString &description, const QString &date_achat, const QString &prix_achat, const QString &texte_libre, const bool en_panne, const QString &code, const QString &caution)
+Kit::Kit(int idkit, const QString &nom, const QString &description, const QString &date_achat, const QString &prix_achat, const QString &texte_libre, const bool en_panne, const QString &code, const QString &caution, const bool to_duplicate)
 {
     this->setIdkit(idkit);
     this->setNom(nom);
@@ -229,6 +229,7 @@ Kit::Kit(int idkit, const QString &nom, const QString &description, const QStrin
     this->setEn_panne(en_panne);
     this->setCode(code);
     this->setCaution(caution);
+    this->setTo_duplicate(to_duplicate);
     this->is_booked = false;
     this->is_out = false;
     this->is_in_basket = false;

@@ -2,7 +2,7 @@
   "id": "CAMP-001",
   "name": "Campagne initiale MicroBrico",
   "application": "micro_brico_app (Qt Widgets / MySQL)",
-  "status": "review_changes_required",
+  "status": "automation_partially_complete",
   "current_stage": "test-cases-correction",
   "approved_stages": ["strategy", "test-cases"],
   "next_stage": "test-cases-correction",
@@ -16,7 +16,7 @@
     "report"
   ],
   "technical_foundation": {
-    "status": "integrated_tc001_validated_db4qtest_only",
+    "status": "partial_7_of_13_automated_db4qtest_only",
     "stage": "technical-foundation",
     "assigned_agent_role": "technical test foundation",
     "starts_after": "review",
@@ -39,6 +39,7 @@
     "business_rules": "tests/regles_metier.md",
     "review": "tests/campaigns/CAMP-001/review.md",
     "technical_foundation": "tests/campaigns/CAMP-001/technical-foundation.md",
+    "automation_status": "tests/campaigns/CAMP-001/automation-status.md",
     "results": "tests/campaigns/CAMP-001/results/summary.json",
     "report": "tests/campaigns/CAMP-001/report.md"
   }

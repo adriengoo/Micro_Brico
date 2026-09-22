@@ -144,6 +144,32 @@ if(MICROBRICO_BUILD_TESTS)
              COMMAND micro_brico_tc001)
     set_tests_properties(CAMP-001.TC-001.login-session PROPERTIES
         SKIP_RETURN_CODE 77)
+
+    # Each IHM scenario runs in its own process: the legacy MainWindow shutdown
+    # path is unstable, while the test fixture still resets its named db4qtest
+    # records before the process exits.
+    get_target_property(MICRO_BRICO_TEST_APP_SOURCES micro_brico_tc001 SOURCES)
+    list(REMOVE_ITEM MICRO_BRICO_TEST_APP_SOURCES tests/automation/tc001_login_session.cpp)
+    add_executable(micro_brico_campaign_cases
+        tests/automation/tc_campaign_cases.cpp
+        ${MICRO_BRICO_TEST_APP_SOURCES}
+    )
+    target_include_directories(micro_brico_campaign_cases PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(micro_brico_campaign_cases PRIVATE Qt6::Widgets Qt6::Sql Qt6::Test)
+
+    foreach(CAMP001_CASE
+            tc002_login_invalid
+            tc010_create_and_find_user
+            tc011_duplicate_utinfo_rejected
+            tc021_broken_kit_not_added_to_reservation_basket
+            tc040_output_requires_recipient_password
+            tc042_output_with_admin_signature_keeps_recipient)
+        add_test(NAME CAMP-001.${CAMP001_CASE}
+                 COMMAND micro_brico_campaign_cases ${CAMP001_CASE})
+        set_tests_properties(CAMP-001.${CAMP001_CASE} PROPERTIES
+            SKIP_RETURN_CODE 77
+            RUN_SERIAL TRUE)
+    endforeach()
 endif()
 
 include(GNUInstallDirs)

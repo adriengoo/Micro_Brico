@@ -687,7 +687,7 @@ void Connect_db::populate_kit_list_from_query(std::vector<Kit*> *kits, QSqlQuery
             bool_panne = true;
         else
             bool_panne = false;
-        Kit * k = new Kit(id,nom, description,date_achat,prix_achat,texte_libre, bool_panne,code_kit, caution);
+        Kit * k = new Kit(id,nom, description,date_achat,prix_achat,texte_libre, bool_panne,code_kit, caution, false);
 
         kits->push_back(k);
     }

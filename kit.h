@@ -36,7 +36,7 @@ private:
 
 public:
     explicit Kit(QObject *parent = nullptr);
-    Kit(int idkit, const QString &nom, const QString &description, const QString &date_achat, const QString &prix_achat, const QString &texte_libre, const bool en_panne, const QString &code, const QString &caution);
+    Kit(int idkit, const QString &nom, const QString &description, const QString &date_achat, const QString &prix_achat, const QString &texte_libre, const bool en_panne, const QString &code, const QString &caution, const bool to_duplicate);
 
     std::vector<Item*> item_list;
 

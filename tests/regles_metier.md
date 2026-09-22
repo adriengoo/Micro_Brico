@@ -11,7 +11,7 @@ Ce document est la référence des règles fonctionnelles à associer aux fiches
 | RM-003 | Un kit sorti peut être réservé. Le produit suppose qu'un kit n'est pas sorti plus d'une semaine par utilisateur et sera rendu le jour de la sortie suivante. Un kit déjà réservé ne peut pas être réservé par un autre utilisateur si la date de début est identique. Aucune limite de réservations d'un même utilisateur sur un même kit n'est prévue actuellement. Un kit marqué en panne par un administrateur, dans le menu de gestion des kits, ne peut être ni réservé ni sorti. | Validée |
 | RM-004 | La suppression des réservations passées depuis le menu maintenance est hors périmètre de CAMP-001. | Hors périmètre CAMP-001 |
 | RM-005 | Une restitution partielle d'un kit n'empêche ni une réservation ultérieure ni une sortie ultérieure. La quantité restituée d'un item ne peut jamais dépasser sa quantité de base. | Validée |
-| RM-006 | Lors de l'annulation d'une réservation, tous les objets de cette réservation redeviennent réservables à la date de début concernée. | Validée |
+| RM-006 | Une sortie, même lorsque tous les kits d'une réservation sont sortis, ne désactive ni ne supprime la réservation : elle reste active. La réservation est désactivée seulement lorsqu'un administrateur annule la réservation via le bouton prévu ou lorsqu'il désactive les réservations passées depuis le menu maintenance. Lors de l'annulation d'une réservation, tous les objets de cette réservation redeviennent réservables à la date de début concernée. | Validée |
 
 ## Implications pour les fiches de test
 
@@ -20,6 +20,7 @@ Ce document est la référence des règles fonctionnelles à associer aux fiches
 - Les tests de disponibilité doivent couvrir : kit en panne marqué par un administrateur refusé à la réservation et à la sortie ; conflit de réservation seulement à date de début identique ; réservation autorisée d'un kit actuellement sorti.
 - Les tests de restitution doivent vérifier qu'une quantité ne dépasse jamais la quantité de base et qu'un retour partiel ne bloque pas une réservation ou sortie ultérieure.
 - L'annulation d'une réservation doit rendre réservables, à la même date de début, tous les objets qu'elle contient.
+- Une sortie ne doit pas désactiver ni supprimer la réservation source ; les tests de sortie doivent donc vérifier qu'elle demeure active.
 
 ## Décisions déjà actées pour CAMP-001
 
