@@ -2,6 +2,10 @@
 
 Statut au 2026-09-22 : 12 fiches sur 13 sont automatisées et validées. La fiche restante est explicitement en attente : aucun verdict PASS n'est simulé.
 
+## Compte rendu de campagne
+
+Depuis le 2026-09-29, [`Run-CAMP-001.ps1`](../../../Run-CAMP-001.ps1) produit un rapport JUnit XML horodaté à chaque exécution dans [`reports/`](reports/). Il indique le commit, les tags qui pointent sur ce commit, la branche, l'état de l'arbre Git et les étapes détaillées de chaque contrôle CTest. Les fichiers générés restent locaux et ne sont pas versionnés ; voir [`reporting.md`](reporting.md).
+
 ## Exécution validée
 
 La commande suivante a été exécutée dans un environnement où les variables `MB_TEST_DB_*` désignent exclusivement `localhost:3306/db4qtest` avec le compte de test, et où `QT_QPA_PLATFORM=offscreen` :

@@ -119,6 +119,12 @@ void scheduleMessageBoxButton(QMessageBox::StandardButton button)
     });
     timer->start();
 }
+
+void reportStep(int number)
+{
+    std::fprintf(stderr, "CAMP001_STEP=%d\n", number);
+    std::fflush(stderr);
+}
 }
 
 class CampaignFixture
@@ -441,6 +447,7 @@ bool CampaignCases::verifyPopupItemAndSubmit(int quantity)
 void CampaignCases::tc002_login_invalid()
 {
     // TC-002 — Étape 1 : soumettre une authentification invalide.
+    reportStep(1);
     auto *window = new MainWindow;
     window->show();
     const QString initialToken = fixture.value(QStringLiteral("SELECT token FROM utilisateur WHERE utinfo=?"), {QString::fromLatin1(kAdminUtinfo)});
@@ -462,9 +469,11 @@ void CampaignCases::tc002_login_invalid()
     scheduleMessageBoxButton(QMessageBox::Ok);
     QTest::mouseClick(confirm, Qt::LeftButton);
     // TC-002 — Étape 2 : vérifier que les accès protégés restent inactifs.
+    reportStep(2);
     QTRY_VERIFY(loginAction->isEnabled());
     QVERIFY(!logoutAction->isEnabled());
     // TC-002 — Étape 3 : vérifier l'absence d'effet persistant sur le jeton.
+    reportStep(3);
     QCOMPARE(fixture.value(QStringLiteral("SELECT token FROM utilisateur WHERE utinfo=?"), {QString::fromLatin1(kAdminUtinfo)}), initialToken);
 }
 
@@ -487,6 +496,7 @@ void CampaignCases::tc003_session_invalidated_by_reservation_refresh()
     QVERIFY(calendar && reserve && user && refreshReservations && findKit && findKitButton && availableKits && basket && loginAction && logoutAction && addKitAction);
 
     // TC-003 — Étape 1 : établir une session administrateur avec réservation disponible.
+    reportStep(1);
     const QDate date = nextFriday();
     calendar->setSelectedDate(date);
     QMetaObject::invokeMethod(window, "on_RESA_calendarWidget_clicked", Q_ARG(QDate, date));
@@ -502,6 +512,7 @@ void CampaignCases::tc003_session_invalidated_by_reservation_refresh()
     QVERIFY(!loginAction->isEnabled());
 
     // TC-003 — Étape 2 : invalider uniquement le jeton serveur de TEST_ADMIN.
+    reportStep(2);
     QSqlQuery query(fixture.database);
     query.prepare(QStringLiteral("UPDATE utilisateur SET token=? WHERE utinfo=?"));
     query.addBindValue(QStringLiteral("TC003_INVALIDATED_TOKEN"));
@@ -511,6 +522,7 @@ void CampaignCases::tc003_session_invalidated_by_reservation_refresh()
              QStringLiteral("TC003_INVALIDATED_TOKEN"));
 
     // TC-003 — Étape 3 : actualiser les réservations, appelant get_user_by_utinfo puis is_user_connected.
+    reportStep(3);
     user->setText(QString::fromLatin1(kAdminUtinfo));
     QTest::mouseClick(refreshReservations, Qt::LeftButton);
     QTRY_VERIFY(loginAction->isEnabled());
@@ -531,6 +543,7 @@ void CampaignCases::tc010_create_and_find_user()
     auto *window = newLoggedInWindow();
     QVERIFY(window);
     // TC-010 — Étape 1 : créer l'utilisateur complet de fixture.
+    reportStep(1);
     auto *add = window->findChild<QAction *>(QStringLiteral("actionAjouter_utilisateur"));
     QVERIFY(add);
     add->trigger();
@@ -544,6 +557,7 @@ void CampaignCases::tc010_create_and_find_user()
     QTRY_COMPARE(fixture.scalar(QStringLiteral("SELECT COUNT(*) FROM utilisateur WHERE utinfo=?"), {QString::fromLatin1(kUser010)}), 1);
 
     // TC-010 — Étape 2 : rechercher par utinfo puis par nom.
+    reportStep(2);
     auto *byUtinfo = window->findChild<QLineEdit *>(QStringLiteral("GESUSER_lineEdit_finduserbyutinfo"));
     auto *byName = window->findChild<QLineEdit *>(QStringLiteral("GESUSER_lineEdit_finduserbyname"));
     auto *search = window->findChild<QPushButton *>(QStringLiteral("GESUSER_pushButton_getuser"));
@@ -557,6 +571,7 @@ void CampaignCases::tc010_create_and_find_user()
     QTest::mouseClick(search, Qt::LeftButton);
     QTRY_COMPARE(table->rowCount(), 1);
     // TC-010 — Étape 3 : contrôler les données persistées de l'utilisateur.
+    reportStep(3);
     QCOMPARE(fixture.value(QStringLiteral("SELECT email FROM utilisateur WHERE utinfo=?"), {QString::fromLatin1(kUser010)}),
              QStringLiteral("test-u-010@example.invalid"));
 }
@@ -567,6 +582,7 @@ void CampaignCases::tc011_duplicate_utinfo_rejected()
     auto *window = newLoggedInWindow();
     QVERIFY(window);
     // TC-011 — Étape 1 : soumettre une seconde création avec le même utinfo.
+    reportStep(1);
     window->findChild<QAction *>(QStringLiteral("actionAjouter_utilisateur"))->trigger();
     QTRY_VERIFY(visibleTopLevel<popupAddUsers>() != nullptr);
     auto *dialog = visibleTopLevel<popupAddUsers>();
@@ -575,10 +591,12 @@ void CampaignCases::tc011_duplicate_utinfo_rejected()
     scheduleMessageBoxButton(QMessageBox::Ok);
     QTest::mouseClick(dialog->findChild<QPushButton *>(QStringLiteral("pushButton_OK")), Qt::LeftButton);
     // TC-011 — Étape 2 : vérifier unicité et absence de persistance partielle.
+    reportStep(2);
     QTRY_COMPARE(fixture.scalar(QStringLiteral("SELECT COUNT(*) FROM utilisateur WHERE utinfo=?"), {QString::fromLatin1(kUser011)}), 1);
     QCOMPARE(fixture.value(QStringLiteral("SELECT nom FROM utilisateur WHERE utinfo=?"), {QString::fromLatin1(kUser011)}), QStringLiteral("Original"));
     QCOMPARE(fixture.scalar(QStringLiteral("SELECT COUNT(*) FROM utilisateur WHERE email=?"), {QStringLiteral("duplicate-attempt@example.invalid")}), 0);
     // TC-011 — Étape 3 : vérifier l'absence de log annexe.
+    reportStep(3);
     QCOMPARE(fixture.scalar(QStringLiteral("SELECT COUNT(*) FROM log l JOIN utilisateur u ON l.id_user=u.id WHERE u.utinfo=?"), {QString::fromLatin1(kUser011)}), 0);
 }
 
@@ -588,6 +606,7 @@ void CampaignCases::tc020_create_kit_with_initial_items()
     QVERIFY(window);
 
     // TC-020 — Étape 1 : renseigner le kit et ajouter les deux items au formulaire.
+    reportStep(1);
     auto *addKit = window->findChild<QAction *>(QStringLiteral("actionajouter_nouveau_kit"));
     QVERIFY(addKit);
     addKit->trigger();
@@ -625,6 +644,7 @@ void CampaignCases::tc020_create_kit_with_initial_items()
     QVERIFY(basket->item(1)->text().contains(QString::fromLatin1(kItem020B)));
 
     // TC-020 — Étape 2 : valider la création et rechercher le kit par code.
+    reportStep(2);
     QTest::mouseClick(confirm, Qt::LeftButton);
     QTRY_VERIFY(visibleTopLevel<PoppupAddKit>() == nullptr);
     auto *findByCode = window->findChild<QLineEdit *>(QStringLiteral("GESKIT_lineEdit_findkitbycode"));
@@ -640,6 +660,7 @@ void CampaignCases::tc020_create_kit_with_initial_items()
     QCOMPARE(kitTable->item(0, 5)->text(), QStringLiteral("Non"));
 
     // TC-020 — Étape 3 : afficher les items et contrôler les quantités persistées.
+    reportStep(3);
     auto *itemTable = window->findChild<QTableWidget *>(QStringLiteral("GESKIT_tableWidget_item"));
     QVERIFY(itemTable);
     QTest::mouseClick(kitTable->viewport(), Qt::LeftButton, Qt::NoModifier,
@@ -679,6 +700,7 @@ void CampaignCases::tc021_broken_kit_not_added_to_reservation_basket()
     auto *basket = window->findChild<QListWidget *>(QStringLiteral("RESA_listWidget_panierResa"));
     QVERIFY(calendar && code && search && available && basket);
     // TC-021 — Étape 1 : afficher le kit en panne à la date sélectionnée.
+    reportStep(1);
     const QDate date = nextFriday();
     calendar->setSelectedDate(date);
     QMetaObject::invokeMethod(window, "on_RESA_calendarWidget_clicked", Q_ARG(QDate, date));
@@ -687,10 +709,12 @@ void CampaignCases::tc021_broken_kit_not_added_to_reservation_basket()
     QTRY_COMPARE(available->count(), 1);
     QVERIFY(available->item(0)->text().contains(QStringLiteral("En panne")));
     // TC-021 — Étape 2 : tenter l'ajout au panier.
+    reportStep(2);
     const QRect rect = available->visualItemRect(available->item(0));
     QTest::mouseDClick(available->viewport(), Qt::LeftButton, Qt::NoModifier, rect.center());
     QTRY_COMPARE(basket->count(), 0);
     // TC-021 — Étape 3 : vérifier l'absence de réservation persistée.
+    reportStep(3);
     QCOMPARE(fixture.scalar(QStringLiteral("SELECT COUNT(*) FROM resa r JOIN kit k ON r.id_kit=k.idkit WHERE k.code_kit=? AND r.start_date=? AND r.is_active=1"),
                              {QString::fromLatin1(kKit021), date}), 0);
 }
@@ -721,6 +745,7 @@ void CampaignCases::tc031_cancel_reservation_and_restore_availability()
     QVERIFY(user && show && reservations && kitsOfReservation && cancel && calendar && kitCode && findKit && availableKits);
 
     // TC-031 — Étape 1 : afficher et sélectionner sans ambiguïté la réservation 31031.
+    reportStep(1);
     user->setText(QString::fromLatin1(kUser031));
     QTest::mouseClick(show, Qt::LeftButton);
     QTRY_COMPARE(reservations->count(), 2);
@@ -739,12 +764,14 @@ void CampaignCases::tc031_cancel_reservation_and_restore_availability()
     QVERIFY(cancel->isEnabled());
 
     // TC-031 — Étape 2 : confirmer l'annulation complète de la réservation sélectionnée.
+    reportStep(2);
     scheduleMessageBoxButton(QMessageBox::Yes);
     QTest::mouseClick(cancel, Qt::LeftButton);
     QTRY_COMPARE(fixture.scalar(QStringLiteral("SELECT is_active FROM resa WHERE id_resa=31031")), 0);
     QTRY_COMPARE(reservations->count(), 1);
 
     // TC-031 — Étape 3 : contrôler la désactivation et la disponibilité du kit à J+7.
+    reportStep(3);
     QCOMPARE(fixture.scalar(QStringLiteral("SELECT COUNT(*) FROM resa WHERE id_resa=31031 AND is_active=1")), 0);
     QCOMPARE(fixture.scalar(QStringLiteral("SELECT COUNT(*) FROM resa WHERE id_resa=31032 AND is_active=1")), 1);
     QCOMPARE(fixture.scalar(QStringLiteral("SELECT COUNT(*) FROM uid_resa")), uidResaCountBefore);
@@ -757,6 +784,7 @@ void CampaignCases::tc031_cancel_reservation_and_restore_availability()
     QVERIFY(!availableKits->item(0)->text().contains(QStringLiteral("déjà réservé à cette date")));
 
     // TC-031 — Étape 4 : vérifier le log utilisateur+kit et préserver l'enregistrement témoin.
+    reportStep(4);
     QCOMPARE(fixture.scalar(QStringLiteral(
                  "SELECT COUNT(*) FROM log l JOIN utilisateur u ON l.id_user=u.id "
                  "JOIN kit k ON l.id_kit=k.idkit WHERE u.utinfo=? AND k.code_kit=? "
@@ -779,6 +807,7 @@ void CampaignCases::tc040_output_requires_recipient_password()
     QVERIFY(window);
 
     // TC-040 — Étape 1 : sélectionner la réservation sans identifier le bénéficiaire.
+    reportStep(1);
     QVERIFY(selectOutputReservation(window, QString::fromLatin1(kUser040), QString::fromLatin1(kKit040)));
     auto *checkout = window->findChild<QPushButton *>(QStringLiteral("SORTIE_pushButton_sortir"));
     auto *status = window->findChild<QLabel *>(QStringLiteral("SORTIE_label_resa_password_status"));
@@ -787,10 +816,12 @@ void CampaignCases::tc040_output_requires_recipient_password()
     QVERIFY(status->text().contains(QStringLiteral("Mot de passe requis")));
 
     // TC-040 — Étape 2 : tenter une sortie sans validation du mot de passe.
+    reportStep(2);
     checkout->click();
     QVERIFY(!checkout->isEnabled());
 
     // TC-040 — Étape 3 : vérifier l'absence de sortie ou de mouvement de stock.
+    reportStep(3);
     QCOMPARE(fixture.scalar(QStringLiteral("SELECT COUNT(*) FROM sortie s JOIN kit k ON s.id_kit=k.idkit WHERE k.code_kit=? AND s.is_active=1"),
                              {QString::fromLatin1(kKit040)}), 0);
     QCOMPARE(fixture.scalar(QStringLiteral("SELECT quantity FROM item i JOIN kit k ON i.forkey=k.idkit WHERE k.code_kit=? AND i.name=?"),
@@ -810,16 +841,19 @@ void CampaignCases::tc041_output_user_signature_stock()
     QVERIFY(window);
 
     // TC-041 — Étape 1 : identifier le bénéficiaire et valider son mot de passe sous session administrateur.
+    reportStep(1);
     QVERIFY(selectOutputReservation(window, QString::fromLatin1(kUser041), QString::fromLatin1(kKit041)));
     QVERIFY(validateOutputPassword(window, QString::fromLatin1(kUserPassword), false));
 
     // TC-041 — Étape 2 : confirmer la sortie conforme des deux unités du kit.
+    reportStep(2);
     auto *checkout = window->findChild<QPushButton *>(QStringLiteral("SORTIE_pushButton_sortir"));
     QVERIFY(checkout && checkout->isEnabled());
     QTest::mouseClick(checkout, Qt::LeftButton);
     QVERIFY(verifyPopupItemAndSubmit(2));
 
     // TC-041 — Étape 3 : vérifier la sortie, la réservation source et les quantités RM-005.
+    reportStep(3);
     QCOMPARE(fixture.scalar(QStringLiteral(
                  "SELECT COUNT(*) FROM sortie s JOIN utilisateur u ON s.id_user=u.id "
                  "JOIN kit k ON s.id_kit=k.idkit WHERE u.utinfo=? AND k.code_kit=? AND s.is_active=1"),
@@ -833,6 +867,7 @@ void CampaignCases::tc041_output_user_signature_stock()
                              {QString::fromLatin1(kKit041), QString::fromLatin1(kItem041)}), 2);
 
     // TC-041 — Étape 4 : contrôler la traçabilité de sortie sans signature administrateur forcée.
+    reportStep(4);
     const int checkoutNumber = fixture.scalar(QStringLiteral(
         "SELECT s.id_sortie FROM sortie s JOIN utilisateur u ON s.id_user=u.id "
         "JOIN kit k ON s.id_kit=k.idkit WHERE u.utinfo=? AND k.code_kit=? AND s.is_active=1"),
@@ -864,9 +899,11 @@ void CampaignCases::tc042_output_with_admin_signature_keeps_recipient()
     QVERIFY(window);
 
     // TC-042 — Étape 1 : sélectionner la signature administrateur.
+    reportStep(1);
     QVERIFY(selectOutputReservation(window, QString::fromLatin1(kUser042), QString::fromLatin1(kKit042)));
 
     // TC-042 — Étape 2 : valider avec le mot de passe de l'administrateur et sortir le kit.
+    reportStep(2);
     QVERIFY(validateOutputPassword(window, fixture.adminPassword, true));
     auto *checkout = window->findChild<QPushButton *>(QStringLiteral("SORTIE_pushButton_sortir"));
     QVERIFY(checkout && checkout->isEnabled());
@@ -874,6 +911,7 @@ void CampaignCases::tc042_output_with_admin_signature_keeps_recipient()
     QVERIFY(verifyPopupItemAndSubmit(1));
 
     // TC-042 — Étape 3 : vérifier bénéficiaire, trace de délégation et réservation source.
+    reportStep(3);
     QCOMPARE(fixture.scalar(QStringLiteral("SELECT COUNT(*) FROM sortie s JOIN utilisateur u ON s.id_user=u.id JOIN kit k ON s.id_kit=k.idkit WHERE u.utinfo=? AND k.code_kit=? AND s.is_active=1"),
                              {QString::fromLatin1(kUser042), QString::fromLatin1(kKit042)}), 1);
     QCOMPARE(fixture.scalar(QStringLiteral("SELECT is_active FROM resa r JOIN kit k ON r.id_kit=k.idkit WHERE r.id_resa=40042 AND k.code_kit=?"),
@@ -905,6 +943,7 @@ void CampaignCases::tc043_return_stock_restoration()
     QVERIFY(user && show && kitsOut && returnKit);
 
     // TC-043 — Étape 1 : identifier le bénéficiaire, sélectionner le kit sorti et valider son mot de passe.
+    reportStep(1);
     user->setText(QString::fromLatin1(kUser043));
     QTest::mouseClick(show, Qt::LeftButton);
     QTRY_COMPARE(kitsOut->count(), 1);
@@ -914,11 +953,13 @@ void CampaignCases::tc043_return_stock_restoration()
     QVERIFY(validateReturnPassword(window, QString::fromLatin1(kUserPassword)));
 
     // TC-043 — Étape 2 : restituer les deux unités effectivement sorties.
+    reportStep(2);
     QVERIFY(returnKit->isEnabled());
     QTest::mouseClick(returnKit, Qt::LeftButton);
     QVERIFY(verifyPopupItemAndSubmit(2));
 
     // TC-043 — Étape 3 : vérifier la désactivation de sortie et les quantités RM-005.
+    reportStep(3);
     QCOMPARE(fixture.scalar(QStringLiteral("SELECT is_active FROM sortie WHERE id_sortie=43043")), 0);
     QCOMPARE(fixture.scalar(QStringLiteral("SELECT quantity FROM item i JOIN kit k ON i.forkey=k.idkit WHERE k.code_kit=? AND i.name=?"),
                              {QString::fromLatin1(kKit043), QString::fromLatin1(kItem043)}), 2);
@@ -928,6 +969,7 @@ void CampaignCases::tc043_return_stock_restoration()
                              {QString::fromLatin1(kKit043), QString::fromLatin1(kItem043)}), 2);
 
     // TC-043 — Étape 4 : contrôler les traces de restitution et de quantités du kit retourné.
+    reportStep(4);
     QCOMPARE(fixture.scalar(QStringLiteral(
                  "SELECT COUNT(*) FROM log l JOIN utilisateur u ON l.id_user=u.id "
                  "JOIN kit k ON l.id_kit=k.idkit WHERE u.utinfo=? AND k.code_kit=? AND l.text LIKE ?"),

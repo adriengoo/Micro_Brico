@@ -1,0 +1,3 @@
+# Rapports JUnit générés localement : historisés sur le poste, jamais versionnés.
+*.xml
+*.html

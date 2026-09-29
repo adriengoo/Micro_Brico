@@ -36,6 +36,12 @@ void trace(const char *message)
     std::fflush(stderr);
 }
 
+void reportStep(int number)
+{
+    std::fprintf(stderr, "CAMP001_STEP=%d\n", number);
+    std::fflush(stderr);
+}
+
 Login_connect *visibleLoginDialog()
 {
     for (QWidget *widget : QApplication::topLevelWidgets()) {
@@ -159,6 +165,7 @@ int Tc001LoginSession::activeDomainRows() const
 void Tc001LoginSession::loginAndLogout()
 {
     trace("TC-001: starting IHM login/logout path");
+    reportStep(1);
     QVERIFY(fixtureToken().isEmpty());
 
     trace("TC-001: constructing MainWindow");
@@ -180,6 +187,7 @@ void Tc001LoginSession::loginAndLogout()
     QVERIFY(!logoutAction->isEnabled());
 
     loginAction->trigger();
+    reportStep(2);
     trace("TC-001: login action triggered");
     QTRY_VERIFY(visibleLoginDialog() != nullptr);
     Login_connect *dialog = visibleLoginDialog();
@@ -202,6 +210,7 @@ void Tc001LoginSession::loginAndLogout()
     QCOMPARE(activeDomainRows(), 0);
 
     logoutAction->trigger();
+    reportStep(3);
     trace("TC-001: logout action triggered");
     QTRY_VERIFY(loginAction->isEnabled());
     QTRY_VERIFY(!logoutAction->isEnabled());
